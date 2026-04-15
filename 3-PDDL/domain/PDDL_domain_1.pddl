@@ -1,60 +1,81 @@
+; Types — what kinds of objects exist
+; Predicates — what facts can be true/false about those objects
+; Functions — numeric values associated with objects (like speed, distance)
+; Actions — how the world changes (conditions + effects on predicates)
 (define (domain robplan)
-(:requirements :typing :durative-actions :strips :fluents)
-  (:types  
-     turtlebot robot camera camera_eo camera_ir robo_arm charger - vehicle
-     vehicle photo valve pump pipe sound gas_ind obj battery - subject
-     city_location city - location
-     waypoint battery_station - city_location
-     route
-     )
+    (:requirements :typing :durative-actions :strips :fluents)
 
-  (:predicates
-    (at ?physical_obj1 - subject ?location1 - location)
-    (available ?vehicle1 - vehicle)
-    (available ?camera1 - camera)    
-    (connects ?route1 - route ?location1 - location ?location2 - location)
-    (in_city ?location1 - location ?city1 - city)
-    (route_available ?route1 - route)
-    (no_photo ?subject1 - subject)
-    (photo ?subject1 - subject)
-    (no_seals_check ?subject1 - subject)
-    (seals_check ?subject1 - subject)
+    (:types
+        turtlebot - vehicle
+        valve charger pump - object
+        waypoint - location
+        route
+    )
 
+    (:predicates
+        (at ?v - vehicle ?wp - waypoint)
+        (at_obj ?o - object ?wp - waypoint)
+        (charged ?v - vehicle)
+        (valve_manipulated ?val - valve)
+        (picture_taken ?wp - waypoint)
+        (connects ?r - route ?wp1 - waypoint ?wp2 - waypoint)
+    )
 
-   )
+    (:functions
+        (route-length ?r - route)
+        (speed ?v - vehicle)
+        (battery_level ?v - vehicle)
+        (duration_picture)
+        (duration_manipulate)
+        (duration_charge)
+    )
 
-(:functions 
-           (distance ?O - location ?L - location)
-           (route-length ?O - route)
-	    (speed ?V - vehicle)
-            )
-
-  (:durative-action move_robot
-       :parameters ( ?V - robot ?O - location ?L - location ?R - route)
-       :duration (= ?duration (/ (route-length ?R) (speed ?V)))
-       :condition (and 
-			(at start (at ?V ?O))
-            		(at start (connects ?R ?O ?L))
-       )
-       :effect (and 
-		  (at start (not (at ?V ?O)))
-                  (at end (at ?V ?L))
+    (:durative-action move
+        :parameters (?v - turtlebot ?from - waypoint ?to - waypoint ?r - route)
+        :duration (= ?duration (/ (route-length ?r) (speed ?v)))
+        :condition (and
+            (at start (at ?v ?from))
+            (at start (connects ?r ?from ?to))
+        )
+        :effect (and
+            (at start (not (at ?v ?from)))
+            (at end (at ?v ?to))
         )
     )
 
+    (:durative-action take_picture
+        :parameters (?v - turtlebot ?wp - waypoint)
+        :duration (= ?duration (duration_picture))
+        :condition (and
+            (over all (at ?v ?wp))
+        )
+        :effect (and
+            (at end (picture_taken ?wp))
+        )
+    )
 
- (:durative-action check_seals_valve_picture_EO
-       :parameters ( ?V - robot ?L - location ?G - camera_eo ?B - valve)
-       :duration (= ?duration 10)
-       :condition (and 
-            (over all (at ?V ?L))
-            (at start (at ?B ?L))
-            (at start (available ?G))
-            (at start (no_seals_check ?B))
-       )
-       :effect (and 
-	    (at start (not (no_seals_check ?B)))
-            (at end (seals_check ?B))
+    (:durative-action manipulate_valve
+        :parameters (?v - turtlebot ?wp - waypoint ?val - valve)
+        :duration (= ?duration (duration_manipulate))
+        :condition (and
+            (over all (at ?v ?wp))
+            (at start (at_obj ?val ?wp))
+        )
+        :effect (and
+            (at end (valve_manipulated ?val))
+        )
+    )
+
+    (:durative-action charge
+        :parameters (?v - turtlebot ?wp - waypoint ?c - charger)
+        :duration (= ?duration (duration_charge))
+        :condition (and
+            (over all (at ?v ?wp))
+            (at start (at_obj ?c ?wp))
+        )
+        :effect (and
+            (at end (charged ?v))
+            (at end (assign (battery_level ?v) 100))
         )
     )
 )

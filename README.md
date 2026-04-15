@@ -23,3 +23,10 @@ If you for some reason need to create the symlinks again, do so by running.
 ```bash
 ./setupSymlink.sh
 ```
+
+For the later tasks, where python3 is needed, UV is a super smooth package and project manager.
+Install UV using the comamnd below.
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
