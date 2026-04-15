@@ -4,8 +4,14 @@ This is a repo containing code for the trutlebot.
 
 ## Installation
 
-First time this repo is cloned, it exects that a guide to setup ROS 1 is followed.
-Then please run the installation script to build the AI planner within this directory.
+Before cloning and installation, make sure ROS 1 is installed and that the `catkin_ws` folder is filled with the github repos.
+Then clone the repo, including the submodules like this:
+
+```bash
+git clone -b theodor/task1 --recursive git@github.com:Kristianstub/Oppdragsplanlegging.git
+```
+
+Then run the installation script to build the AI planner within this directory.
 This will also set up the symlinks for the rest of the system.
 
 Installation script:
@@ -13,7 +19,7 @@ Installation script:
 ./install.sh
 ```
 
-If you for somereason need to create the symlinks again, do so by running
+If you for some reason need to create the symlinks again, do so by running.
 ```bash
 ./setupSymlink.sh
 ```

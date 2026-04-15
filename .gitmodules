@@ -1,3 +1,4 @@
 [submodule "temporal-planning-main/temporal-planning"]
 	path = temporal-planning-main/temporal-planning
 	url = https://github.com/aig-upf/temporal-planning.git
+	ignore = untracked
