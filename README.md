@@ -48,3 +48,10 @@ python2.7 bin/plan.py stp-2 ~/catkin_ws/src/temporal-planning-main/temporal-plan
 You can then see the plan here:
 temporal-planning-main/temporal-planning/tmp_sas_plan.1"
 
+### Task 6 - Gazebo
+
+Open the world file in Gazebo by running. (This requires a GUI)
+
+```bash
+gazebo ~/catkin_ws/src/turtlebot3_simulations/turtlebot3_gazebo/worlds/turtlebot3_ttk4192.world
+```
