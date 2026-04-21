@@ -287,34 +287,41 @@ def taking_photo_exe():
     # Sleep to give the last log messages time to be sent
 
 	# saving photo in a desired directory
-    file_source = '/home/miguel/catkin_ws/'
-    file_destination = '/home/miguel/catkin_ws/src/assigment4_ttk4192/scripts'
+    file_source = '/home/ttk4192/catkin_ws/'
+    file_destination = '/home/ttk4192/catkin_ws/src/assigment4_ttk4192/scripts'
     g='photo'+dt_string+'.jpg'
 
     shutil.move(file_source + g, file_destination)
     rospy.sleep(1)
 
-def move_robot_waypoint0_waypoint1():
-    # This function executes Move Robot from 1 to 2
-    # This function uses hybrid A-star
-    a=0
-    while a<3:
-        print("Excuting Mr12")
-        time.sleep(1)
-        a=a+1
-    print("Computing hybrid A* path")
-	
+WAYPOINT_MAP = {
+    'waypoint0': (0.1,  0.1),
+    'waypoint1': (1.7,  0.7),
+    'waypoint2': (1.8,  0.9),
+    'waypoint3': (1.9,  2.75),
+    'waypoint4': (5.21, 0.2),
+    'waypoint5': (0.9,  0.2),
+    'waypoint6': (1.4,  1.0),
+}
+
+def move_robot(wp_from, wp_to):
+    global WAYPOINTS
+    start = list(WAYPOINT_MAP[wp_from]) + [0]
+    end   = list(WAYPOINT_MAP[wp_to])   + [0]
+    print("Computing hybrid A* path: {} -> {}".format(wp_from, wp_to))
     p = argparse.ArgumentParser()
-    p.add_argument('-heu', type=int, default=1, help='heuristic type')
-    p.add_argument('-r', action='store_true', help='allow reverse or not')
-    p.add_argument('-e', action='store_true', help='add extra cost or not')
-    p.add_argument('-g', action='store_true', help='show grid or not')
-    args = p.parse_args()
-    start_pos = [2, 2, 0]
-    end_pos = [6, 6, 3*pi/4]
-    main_hybrid_a(args.heu,start_pos,end_pos,args.r,args.e,args.g)
-    print("Executing path following")
+    p.add_argument('-heu', type=int, default=1)
+    p.add_argument('-r', action='store_true')
+    p.add_argument('-e', action='store_true')
+    p.add_argument('-g', action='store_true')
+    args = p.parse_args([])
+    main_hybrid_a(args.heu, start, end, args.r, args.e, args.g)
+    WAYPOINTS = [list(WAYPOINT_MAP[wp_from]), list(WAYPOINT_MAP[wp_to])]
+    print("Executing path following: {} -> {}".format(wp_from, wp_to))
     turtlebot_move()
+
+def move_robot_waypoint0_waypoint1():
+    move_robot('waypoint0', 'waypoint1')
 
 
 def Manipulate_OpenManipulator_x():
@@ -428,12 +435,22 @@ if __name__ == '__main__':
         result = subprocess.run(['./plan.sh', '1'], capture_output=True, text=True)
 
     
-        # 5.2) Reading the plan 
+        # 5.2) Reading the plan
         print("  ")
         print("Reading the plan from AI planner")
         print("  ")
-        plan_general=plan_general
-        print(plan_general[0])
+        plan_file = '/home/ttk4192/catkin_ws/src/temporal-planning-main/temporal-planning/tmp_sas_plan.1'
+        plan_general = []
+        with open(plan_file, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                # Format: "0.000: ( action param1 ... ) [duration]"
+                match = re.search(r'\(\s*(.+?)\s*\)', line)
+                if match:
+                    plan_general.append(match.group(1))
+        print(plan_general)
 
         # 5.3) Start mission execution 
         # convert string into functions and executing
@@ -445,39 +462,32 @@ if __name__ == '__main__':
         task_total=len(plan_general)
         i_ini=0
         while i_ini < task_total:
-            move_robot_waypoint0_waypoint1()
-            #taking_photo_exe()
-
-            plan_temp=plan_general[i_ini].split()
+            plan_temp = plan_general[i_ini].split()
             print(plan_temp)
-            if plan_temp[0]=="check_pump_picture_ir":
-                print("Inspect -pump")
-                time.sleep(1)
 
-            if plan_temp[0]=="check_seals_valve_picture_eo":
-                print("check-valve-EO")
+            if plan_temp[0] == "move":
+                # move turtlebot0 waypoint_from waypoint_to route
+                wp_from = plan_temp[2]
+                wp_to   = plan_temp[3]
+                print("Moving robot: {} -> {}".format(wp_from, wp_to))
+                move_robot(wp_from, wp_to)
 
-                time.sleep(1)
+            elif plan_temp[0] == "take_picture":
+                # take_picture turtlebot0 waypoint
+                print("Taking picture at {}".format(plan_temp[2]))
+                taking_photo_exe()
 
-            if plan_temp[0]=="move_robot":
-                print("move_robot_waypoints")
+            elif plan_temp[0] == "manipulate_valve":
+                # manipulate_valve turtlebot0 waypoint valve
+                print("Manipulating valve {} at {}".format(plan_temp[3], plan_temp[2]))
+                Manipulate_OpenManipulator_x()
 
-                time.sleep(1)
+            elif plan_temp[0] == "charge":
+                # charge turtlebot0 waypoint charger
+                print("Charging battery at {}".format(plan_temp[2]))
+                charge_battery_waypoint0()
 
-            if plan_temp[0]=="move_charge_robot":
-                print("")
-                print("Going to rechard robot")
-
-                time.sleep(1)
-
-            if plan_temp[0]=="charge_battery":
-                print(" ")
-                print("charging battery")
-
-                time.sleep(1)
-
-
-            i_ini=i_ini+1  # Next tasks
+            i_ini = i_ini + 1  # Next task
 
 
         print("")
