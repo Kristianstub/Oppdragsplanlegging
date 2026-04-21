@@ -46,5 +46,5 @@ python2.7 bin/plan.py stp-2 ~/catkin_ws/src/temporal-planning-main/temporal-plan
 ```
 
 You can then see the plan here:
-temporal-planning-main/temporal-planning/,tmp sas plan.1"
+temporal-planning-main/temporal-planning/tmp_sas_plan.1"
 
