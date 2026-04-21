@@ -317,8 +317,48 @@ def taking_photo_exe():
 
 
 def Manipulate_OpenManipulator_x():
-    print("Executing manipulate a weight")
-    time.sleep(5)
+    print("Executing manipulate valve with OpenManipulator-X")
+
+    import actionlib
+    from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
+    from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+
+    arm_client     = actionlib.SimpleActionClient('/arm_controller/follow_joint_trajectory',     FollowJointTrajectoryAction)
+    gripper_client = actionlib.SimpleActionClient('/gripper_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
+
+    rospy.loginfo("Waiting for arm and gripper action servers...")
+    arm_client.wait_for_server(timeout=rospy.Duration(5.0))
+    gripper_client.wait_for_server(timeout=rospy.Duration(5.0))
+
+    def move_arm(positions, duration=2.0):
+        goal = FollowJointTrajectoryGoal()
+        goal.trajectory.joint_names = ['joint1', 'joint2', 'joint3', 'joint4']
+        point = JointTrajectoryPoint()
+        point.positions = positions
+        point.time_from_start = rospy.Duration(duration)
+        goal.trajectory.points = [point]
+        arm_client.send_goal_and_wait(goal)
+
+    def set_gripper(position, duration=1.0):
+        goal = FollowJointTrajectoryGoal()
+        goal.trajectory.joint_names = ['gripper']
+        point = JointTrajectoryPoint()
+        point.positions = [position]
+        point.time_from_start = rospy.Duration(duration)
+        goal.trajectory.points = [point]
+        gripper_client.send_goal_and_wait(goal)
+
+    # 1) Move arm forward to reach the valve
+    move_arm([0.0, -0.5, 0.3, 0.2], duration=2.0)
+
+    # 2) Grip
+    set_gripper(-0.01, duration=1.0)
+
+    # 3) Ungrip
+    set_gripper(0.01, duration=1.0)
+
+    # 4) Move arm back to home position
+    move_arm([0.0, -1.05, 0.35, 0.70], duration=2.0)
 
 def making_turn_exe():
     print("Executing Make a turn")
