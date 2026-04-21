@@ -249,7 +249,7 @@ class HybridAstar:
 def main_hybrid_a(heu,start_pos, end_pos,reverse, extra, grid_on):
 
     tc = map_grid()
-    env = Environment(tc.obs)
+    env = Environment(tc.obs, lx=5.21, ly=2.75)
     car = SimpleCar(env, start_pos, end_pos, l=0.3, max_phi=pi/3)
     grid = Grid(env)
 
@@ -415,8 +415,7 @@ class map_grid:
             [1.55, 0.7,  0.5,  0.2], # Valve 0
             [3.16, 0.7,  0.5,  0.2], # Valve 1
             [3.56, 1.75, 0.5,  0.2], # Pump 1
-            [3.3,  0.0,  1.91, 0.2],
-            [0, 5, 5, 0.1],
+            [3.3,  0.0,  1.91, 0.2], # Wall reduction Large
             # [0, 6, 6, 0.1],
             # [6, 0, 0.1, 4],
             # [0, 14, 4, 0.1],
@@ -436,6 +435,6 @@ if __name__ == '__main__':
     p.add_argument('-g', action='store_true', help='show grid or not')
     args = p.parse_args()
     start_pos = [0.3, 0.3, 0]      # Here defined initial position [x,y,angle]
-    end_pos = [4.5, 4.5, 1*pi/4] # Target point [x,y, angle]
+    end_pos = [4.5, 2, 1*pi/4] # Target point [x,y, angle]
     main_hybrid_a(args.heu,start_pos,end_pos,args.r,args.e,args.g)
     print("An optimal path was computed using hybrid A* algorithm")
