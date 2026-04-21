@@ -8,5 +8,5 @@ ln -sf "$(pwd)/6-Gazebo/turtlebot3_ttk4192.world" ~/catkin_ws/src/turtlebot3_sim
 ln -sf "$(pwd)/6-Gazebo/turtlebot3_ttk4192.launch" ~/catkin_ws/src/turtlebot3_simulations/turtlebot3_gazebo/launch/
 
 rm -rf ~/catkin_ws/src/assignment4_ttk419
-ln -sf "$(pwd)/8-GNC" ~/catkin_ws/src/assignment4_ttk419
+ln -sf "$(pwd)/mission-planner" ~/catkin_ws/src/assignment4_ttk419
 
