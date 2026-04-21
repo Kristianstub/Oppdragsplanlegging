@@ -39,7 +39,10 @@ class DubinsPath:
     def __init__(self, car):
 
         self.car = car
-        self.r = self.car.l / tan(self.car.max_phi)
+        if hasattr(self.car, 'max_phi'):
+            self.r = self.car.l / tan(self.car.max_phi)
+        else:
+            self.r = 1.0 / self.car.max_omega
         
         # turn left: 1, turn right: -1
         self.direction = {
@@ -236,7 +239,10 @@ class DubinsPath:
 
         p_inner = start_pos[:2]
         id = 1 if d == -1 else 2
-        p_outer = transform(x, y, 1.3*self.car.l, 0.4*self.car.l, theta, id)
+        if hasattr(self.car, 'max_phi'):
+            p_outer = transform(x, y, 1.3*self.car.l, 0.4*self.car.l, theta, id)
+        else:
+            p_outer = transform(x, y, 0.5*self.car.l, 0.5*self.car.l, theta, id)
 
         r_inner = r - self.car.carw / 2
         r_outer = distance(p_outer, c)
@@ -266,8 +272,9 @@ class DubinsPath:
     def get_route(self, s):
         """ Get the route of dubins path. """
 
-        phi1 = self.car.max_phi if s.d[0] == 1 else -self.car.max_phi
-        phi2 = self.car.max_phi if s.d[1] == 1 else -self.car.max_phi
+        max_turn = self.car.max_phi if hasattr(self.car, 'max_phi') else self.car.max_omega
+        phi1 = max_turn if s.d[0] == 1 else -max_turn
+        phi2 = max_turn if s.d[1] == 1 else -max_turn
 
         phil = [phi1, 0, phi2]
         goal = [s.t1, s.t2, self.end_pos]
@@ -350,9 +357,11 @@ def main():
         _carl.set_color('m')
         _carl.set_alpha(0.1)
 
-        edgecolor = ['k']*5 + ['r']
-        facecolor = ['y'] + ['k']*4 + ['r']
-        _car.set_paths(path[min(i, len(path)-1)].model)
+        current_model = path[min(i, len(path)-1)].model
+        n = len(current_model)
+        edgecolor = ['k'] * (n - 1) + ['r']
+        facecolor = [current_model[0].get_facecolor()] + ['k'] * (n - 2) + ['r']
+        _car.set_paths(current_model)
         _car.set_edgecolor(edgecolor)
         _car.set_facecolor(facecolor)
         _car.set_zorder(3)

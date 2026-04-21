@@ -10,9 +10,10 @@ from matplotlib.patches import Rectangle
 from itertools import product
 import argparse
 from utils.grid import Grid
-from utils.car import SimpleCar
+from utils.TurtlebotCar import TurtlebotCar
 from utils.environment import Environment
 from utils.dubins_path import DubinsPath
+from utils.rss_path import RSSPath
 from utils.astar import Astar
 from utils.utils import plot_a_car, get_discretized_thetas, round_theta, same_point
 
@@ -38,10 +39,14 @@ class HybridAstar:
         self.start = self.car.start_pos
         self.goal = self.car.end_pos
 
-        self.r = self.car.l / tan(self.car.max_phi)
+        if hasattr(self.car, 'max_phi'):
+            self.r = self.car.l / tan(self.car.max_phi)
+            self.phil = [-self.car.max_phi, 0, self.car.max_phi]
+        else:
+            self.r = None  # TurtlebotCar can turn in place (radius = 0)
+            self.phil = [-self.car.max_omega, 0, self.car.max_omega]
         self.drive_steps = int(sqrt(2)*self.grid.cell_size/self.dt) + 1
         self.arc = self.drive_steps * self.dt
-        self.phil = [-self.car.max_phi, 0, self.car.max_phi]
         self.ml = [1, -1]
 
         if reverse:
@@ -50,6 +55,7 @@ class HybridAstar:
             self.comb = list(product([1], self.phil))
 
         self.dubins = DubinsPath(self.car)
+        self.rss = RSSPath(self.car)
         self.astar = Astar(self.grid, self.goal[:2])
         
         self.w1 = 0.95 # weight for astar heuristic
@@ -150,26 +156,27 @@ class HybridAstar:
 
         return children
     
-    def best_final_shot(self, open_, closed_, best, cost, d_route, n=10):
-        """ Search best final shot in open set. """
+    def best_final_shot(self, open_, closed_, best, cost, n=10):
+        """ Search best final shot in open set using RSS. """
 
         open_.sort(key=lambda x: x.f, reverse=False)
 
+        rss_segment = self.rss.get_path(best.pos, self.goal)
+
         for t in range(min(n, len(open_))):
             best_ = open_[t]
-            solutions_ = self.dubins.find_tangents(best_.pos, self.goal)
-            d_route_, cost_, valid_ = self.dubins.best_tangent(solutions_)
-        
+            cost_, valid_ = self.rss.find_path(best_.pos, self.goal)
+
             if valid_ and cost_ + best_.g_ < cost + best.g_:
                 best = best_
                 cost = cost_
-                d_route = d_route_
-        
+                rss_segment = self.rss.get_path(best_.pos, self.goal)
+
         if best in open_:
             open_.remove(best)
             closed_.append(best)
-        
-        return best, cost, d_route
+
+        return best, cost, rss_segment
     
     def backtracking(self, node):
         """ Backtracking the path. """
@@ -204,19 +211,18 @@ class HybridAstar:
             open_.remove(best)
             closed_.append(best)
 
-            # check dubins path
+            # check RSS final shot
             if count % self.check_dubins == 0:
-                solutions = self.dubins.find_tangents(best.pos, self.goal)
-                d_route, cost, valid = self.dubins.best_tangent(solutions)
-                
+                cost, valid = self.rss.find_path(best.pos, self.goal)
+
                 if valid:
-                    best, cost, d_route = self.best_final_shot(open_, closed_, best, cost, d_route)
-                    route = self.backtracking(best) + d_route
-                    path = self.car.get_path(self.start, route)
+                    best, cost, rss_segment = self.best_final_shot(open_, closed_, best, cost)
+                    hybrid_path = self.car.get_path(self.start, self.backtracking(best))
+                    path = hybrid_path + rss_segment
                     cost += best.g_
                     print('Shortest path: {}'.format(round(cost, 2)))
                     print('Total iteration:', count)
-                    
+
                     return path, closed_
 
             children = self.get_children(best, heu, extra)
@@ -250,7 +256,7 @@ def main_hybrid_a(heu,start_pos, end_pos,reverse, extra, grid_on):
 
     tc = map_grid()
     env = Environment(tc.obs, lx=5.21, ly=2.75)
-    car = SimpleCar(env, start_pos, end_pos, l=0.3, max_phi=pi/3)
+    car = TurtlebotCar(env, start_pos, end_pos, l=0.1, max_omega=pi)
     grid = Grid(env)
 
     hastar = HybridAstar(car, grid, reverse)
@@ -344,13 +350,10 @@ def main_hybrid_a(heu,start_pos, end_pos,reverse, extra, grid_on):
 
     def animate(i):
 
-        edgecolor = ['k']*5 + ['r']
-        facecolor = ['y'] + ['k']*4 + ['r']
-
         if i < len(branches):
             _branches.set_paths(branches[:i+1])
             _branches.set_color(bcolors)
-        
+
         else:
             _branches.set_paths(branches)
 
@@ -368,7 +371,12 @@ def main_hybrid_a(heu,start_pos, end_pos,reverse, extra, grid_on):
             _path1.set_data(xl[:min(j+1, len(path))], yl[:min(j+1, len(path))])
             _path1.set_zorder(3)
 
-            _car.set_paths(path[min(j, len(path)-1)].model)
+            current_model = path[min(j, len(path)-1)].model
+            n = len(current_model)
+            edgecolor = ['k'] * (n - 1) + ['r']
+            facecolor = [current_model[0].get_facecolor()] + ['k'] * (n - 2) + ['r']
+
+            _car.set_paths(current_model)
             _car.set_edgecolor(edgecolor)
             _car.set_facecolor(facecolor)
             _car.set_zorder(3)
@@ -435,7 +443,7 @@ if __name__ == '__main__':
     p.add_argument('-e', action='store_true', help='add extra cost or not')
     p.add_argument('-g', action='store_true', help='show grid or not')
     args = p.parse_args()
-    start_pos = [0.2, 0.2, 0]      # Here defined initial position [x,y,angle]
-    end_pos = [4.5, 2, 1*pi/4] # Target point [x,y, angle]
+    start_pos = [0.11, 0.11, 0]      # Here defined initial position [x,y,angle]
+    end_pos = [1.71, 0.69, 0] # Target point [x,y, angle]
     main_hybrid_a(args.heu,start_pos,end_pos,args.r,args.e,args.g)
     print("An optimal path was computed using hybrid A* algorithm")
