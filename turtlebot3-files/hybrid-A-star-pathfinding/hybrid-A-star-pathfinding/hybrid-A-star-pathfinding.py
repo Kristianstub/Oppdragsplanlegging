@@ -249,8 +249,8 @@ class HybridAstar:
 def main_hybrid_a(heu,start_pos, end_pos,reverse, extra, grid_on):
 
     tc = map_grid()
-    env = Environment(tc.obs)
-    car = SimpleCar(env, start_pos, end_pos)
+    env = Environment(tc.obs, lx=5.21, ly=2.75)
+    car = SimpleCar(env, start_pos, end_pos, l=0.3)
     grid = Grid(env)
 
     hastar = HybridAstar(car, grid, reverse)
@@ -404,31 +404,29 @@ class Node:
         return hash((self.grid_pos))
     
 class map_grid:
-    """ Here the obstacles are defined for a 20x20 map. """
     def __init__(self):
-
-        self.start_pos2 = [4, 4, 0]  # default values
-        self.end_pos2 = [4, 8, -pi]  # default
         self.obs = [
-            [0, 6, 6, 0.1],
-            [6, 0, 0.1, 4],
-            [0, 14, 4, 0.1],
-            [6, 14, 0.1, 6],
-            [14, 14, 6, 0.1],
-            [14, 16, 0.1, 4],            
-            [16, 6, 4, 0.1],
-            [14, 0, 0.1, 6],          
+            [1.2,  1.45, 0.2,  0.4],
+            [2.5,  1.45, 0.4,  0.4],
+            [1.55, 0.7,  0.5,  0.2],
+            [3.16, 0.7,  0.5,  0.2],
+            [3.56, 1.75, 0.5,  0.2],
+            [3.3,  0.0,  1.91, 0.2],
         ]
 
 if __name__ == '__main__':
-    print("Executing hybrid A* algorithm")
     p = argparse.ArgumentParser()
-    p.add_argument('-heu', type=int, default=1, help='heuristic type')  #A* heuristic
-    p.add_argument('-r', action='store_true', help='allow reverse or not')
-    p.add_argument('-e', action='store_true', help='add extra cost or not')
-    p.add_argument('-g', action='store_true', help='show grid or not')
+    p.add_argument('-heu', type=int, default=1)
+    p.add_argument('-r', action='store_true')
+    p.add_argument('-e', action='store_true')
+    p.add_argument('-g', action='store_true')
     args = p.parse_args()
-    start_pos = [2, 2, 0]      # Here defined initial position [x,y,angle]
-    end_pos = [4.5, 4.5, 1*pi/4] # Target point [x,y, angle]
-    main_hybrid_a(args.heu,start_pos,end_pos,args.r,args.e,args.g)
-    print("An optimal path was computed using hybrid A* algorithm")
+
+    legs = [
+        ([1.71, 0.69, 0],    [3.4,  0.92, 0]   ),  # wp1 -> wp2
+        ([3.4,  0.92, 0],    [3.3,  2.7,  pi/2] ),  # wp2 -> wp3
+        ([3.3,  2.7,  -pi/2],[5.19, 0.21, 0]   ),  # wp3 -> wp4
+    ]
+
+    for start_pos, end_pos in legs:
+        main_hybrid_a(args.heu, start_pos, end_pos, args.r, args.e, args.g)

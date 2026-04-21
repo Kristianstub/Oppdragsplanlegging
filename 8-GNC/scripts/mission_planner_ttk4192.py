@@ -471,7 +471,7 @@ def main_hybrid_a(heu,start_pos, end_pos,reverse, extra, grid_on):
 
     tc = map_grid_robplan()
     env = Environment_robplan(tc.obs, lx=5.21, ly=2.75)
-    car = SimpleCar(env, start_pos, end_pos)
+    car = SimpleCar(env, start_pos, end_pos, l=0.3)
     grid = Grid_robplan(env)
 
     hastar = HybridAstar(car, grid, reverse)
