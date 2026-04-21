@@ -30,6 +30,7 @@ import copy
 # Import here the packages used in your codes
 from hybridAStarPathfinding import main_hybrid_a
 from waypoints import WAYPOINTS
+import subprocess
 
 """ ----------------------------------------------------------------------------------
 Mission planner for Autonomos robots: TTK4192,NTNU. 
@@ -422,59 +423,10 @@ if __name__ == '__main__':
         # aea 4
         
 
-		# 5.1) Starting the AI Planner
-       
-        a_plan=1    
-        if a_plan==1:
-           print(" ---Executing Graph planner --- ")
-           time.sleep(1)
-           if len(sys.argv) != 1 and len(sys.argv) != 3:
-                print("Usage: GraphPlan.py domainName problemName")
-                exit()
-            # Here you need to load your PDDL domain
-           dir_p="~/catkin_ws/src/assigment4_ttk4192/scripts/ai_planner_modules/PDDL_domain/"
-           domain = dir_p+"dwrDomain_turtlebot.txt"
-           problem = dir_p+"dwrProblem_turtlebot.txt"
-           if len(sys.argv) == 3:
-                domain = str(sys.argv[1])
-                problem = str(sys.argv[2])
-           gp = GraphPlan(domain, problem)
-           start = time.time()
-           plan = gp.graphPlan()
-           elapsed = time.time() - start
-           plan=np.array(plan)
-           l=[]
-            #print([plan.action for action in plan])
-           if plan is not None:
-                print("Plan found with %d actions in %.2f seconds" %
-                    (len([act for act in plan if not act.isNoOp()]), elapsed))            
-                for i in range(len(plan)):
-                    #print(plan[i])
-                    l.append(plan[i])
-           else:
-                print("Could not find a plan in %.2f seconds" % elapsed)
+	# 5.1) Make a plan using temporal planner
 
-            #print(l[1])
-           m=[]
-           for i in range(len(l)):
-                a=str(l[i])
-                for k in a:
-                    if a[0].isupper():
-                        m.append(a)
-                        break
-           plan_general=m
-           #print("Plan in graph -plan",plan_general)
-           # expansion of names of actions graph notation
-           for i in range(len(plan_general)):
-               if plan_general[i]=="Pr2":
-                   plan_general[i]="taking_photo"
-               if plan_general[i]=="Tr3":
-                   plan_general[i]="making_turn"
-           print("Plan: ",plan_general)
-        else:
-           time.sleep()
-           print("No valid option")
-   
+        result = subprocess.run(['./plan.sh', '1'], capture_output=True, text=True)
+
     
         # 5.2) Reading the plan 
         print("  ")
