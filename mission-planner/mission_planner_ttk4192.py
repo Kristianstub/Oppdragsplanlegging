@@ -162,10 +162,12 @@ class turtlebot_move():
         rospy.logwarn("Action done.")
 
         # plot trajectory
+        """
         data = np.array(self.trajectory)
         np.savetxt('trajectory.csv', data, fmt='%f', delimiter=',')
         plt.plot(data[:,0],data[:,1])
         plt.show()
+        """
 
 
     def move_to_point(self, x, y):
@@ -437,9 +439,17 @@ if __name__ == '__main__':
                 print("Move turlebot", step['args'])
                 move_turtlebot_to_waypoint(step['args'])
             elif step['action'] == 'take_picture':
-                print("Take picture")
+                waypoint_name = step['args'][1] if len(step['args']) > 1 else 'unknown'
+                img_title = f"{waypoint_name}.jpg"
+                print(f"Take picture at {waypoint_name}")
+                camera = TakePhoto()
+                if camera.take_picture(img_title):
+                    rospy.loginfo("Saved image " + img_title)
+                else:
+                    rospy.loginfo("No image received at " + waypoint_name)
             elif step['action'] == 'manipulate_valve':
                 print("Manipulate valve")
+                Manipulate_OpenManipulator_x()
 
         exit(0)
 
