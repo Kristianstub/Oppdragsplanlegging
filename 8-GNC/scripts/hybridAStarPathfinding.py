@@ -416,6 +416,7 @@ class map_grid:
             [3.16, 0.7,  0.5,  0.2], # Valve 1
             [3.56, 1.75, 0.5,  0.2], # Pump 1
             [3.3,  0.0,  1.91, 0.2], # Wall reduction Large
+            # [0,    1,    0.5,  0.2], # Wall reduction Small, on left side
             # [0, 6, 6, 0.1],
             # [6, 0, 0.1, 4],
             # [0, 14, 4, 0.1],
@@ -434,7 +435,7 @@ if __name__ == '__main__':
     p.add_argument('-e', action='store_true', help='add extra cost or not')
     p.add_argument('-g', action='store_true', help='show grid or not')
     args = p.parse_args()
-    start_pos = [0.3, 0.3, 0]      # Here defined initial position [x,y,angle]
+    start_pos = [0.2, 0.2, 0]      # Here defined initial position [x,y,angle]
     end_pos = [4.5, 2, 1*pi/4] # Target point [x,y, angle]
     main_hybrid_a(args.heu,start_pos,end_pos,args.r,args.e,args.g)
     print("An optimal path was computed using hybrid A* algorithm")
