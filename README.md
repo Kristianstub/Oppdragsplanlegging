@@ -8,7 +8,7 @@ Before cloning and installation, make sure ROS 1 is installed and that the `catk
 Then clone the repo, including the submodules like this:
 
 ```bash
-git clone -b theodor/task1 --recursive git@github.com:Kristianstub/Oppdragsplanlegging.git
+git clone --recursive git@github.com:Kristianstub/Oppdragsplanlegging.git
 ```
 
 Then run the installation script to build the AI planner within this directory.
