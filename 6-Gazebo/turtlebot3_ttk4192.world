@@ -1,0 +1,197 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <world name="default">
+
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <!-- Outer walls -->
+    <!-- Bottom wall -->
+    <model name="wall_bottom">
+      <static>true</static>
+      <pose>4.25 0 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>8.5 0.05 0.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>8.5 0.05 0.5</size></box></geometry>
+          <material><script><name>Gazebo/Grey</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Top wall -->
+    <model name="wall_top">
+      <static>true</static>
+      <pose>4.25 2.55 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>8.5 0.05 0.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>8.5 0.05 0.5</size></box></geometry>
+          <material><script><name>Gazebo/Grey</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Left wall -->
+    <model name="wall_left">
+      <static>true</static>
+      <pose>0 1.275 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.05 2.55 0.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.05 2.55 0.5</size></box></geometry>
+          <material><script><name>Gazebo/Grey</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Right wall -->
+    <model name="wall_right">
+      <static>true</static>
+      <pose>8.5 1.275 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.05 2.55 0.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.05 2.55 0.5</size></box></geometry>
+          <material><script><name>Gazebo/Grey</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Interior walls based on Fig. 7 -->
+
+    <!-- Vertical wall x=1.2, from y=0 to y=1.0 -->
+    <model name="wall_int_1">
+      <static>true</static>
+      <pose>1.2 0.5 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.05 1.0 0.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.05 1.0 0.5</size></box></geometry>
+          <material><script><name>Gazebo/Grey</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Vertical wall x=1.2, from y=1.4 to y=2.55 -->
+    <model name="wall_int_2">
+      <static>true</static>
+      <pose>1.2 1.975 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.05 1.15 0.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.05 1.15 0.5</size></box></geometry>
+          <material><script><name>Gazebo/Grey</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Horizontal wall y=1.0, from x=1.2 to x=2.4 -->
+    <model name="wall_int_3">
+      <static>true</static>
+      <pose>1.8 1.0 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>1.2 0.05 0.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>1.2 0.05 0.5</size></box></geometry>
+          <material><script><name>Gazebo/Grey</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Vertical wall x=2.4, from y=1.0 to y=1.8 -->
+    <model name="wall_int_4">
+      <static>true</static>
+      <pose>2.4 1.4 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.05 0.8 0.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.05 0.8 0.5</size></box></geometry>
+          <material><script><name>Gazebo/Grey</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Horizontal wall y=1.8, from x=2.4 to x=3.6 -->
+    <model name="wall_int_5">
+      <static>true</static>
+      <pose>3.0 1.8 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>1.2 0.05 0.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>1.2 0.05 0.5</size></box></geometry>
+          <material><script><name>Gazebo/Grey</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Vertical wall x=3.6, from y=0 to y=1.8 -->
+    <model name="wall_int_6">
+      <static>true</static>
+      <pose>3.6 0.9 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.05 1.8 0.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.05 1.8 0.5</size></box></geometry>
+          <material><script><name>Gazebo/Grey</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Vertical wall x=5.21, from y=1.8 to y=2.55 -->
+    <model name="wall_int_7">
+      <static>true</static>
+      <pose>5.21 2.175 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.05 0.75 0.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.05 0.75 0.5</size></box></geometry>
+          <material><script><name>Gazebo/Grey</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Horizontal wall y=1.8, from x=3.6 to x=5.21 -->
+    <model name="wall_int_8">
+      <static>true</static>
+      <pose>4.405 1.8 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>1.61 0.05 0.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>1.61 0.05 0.5</size></box></geometry>
+          <material><script><name>Gazebo/Grey</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+  </world>
+</sdf>
