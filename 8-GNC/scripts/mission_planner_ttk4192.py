@@ -696,8 +696,8 @@ def move_robot_waypoint0_waypoint1():
     p.add_argument('-e', action='store_true')
     p.add_argument('-g', action='store_true')
     args, _ = p.parse_known_args()
-    start_pos = [0.11, 0.11, 0]
-    end_pos   = [1.71, 0.69, 0]
+    start_pos = [0.11, 0.40, 0]
+    end_pos   = [1.71, 0.40, 0]
     main_hybrid_a(args.heu, start_pos, end_pos, args.r, args.e, args.g)
     print("Executing path following")
     turtlebot_move()
