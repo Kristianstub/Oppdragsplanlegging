@@ -265,7 +265,7 @@ class TakePhoto:
         self.image_received = False
 
         # Connect image topic
-        img_topic = "/camera/rgb/image_raw"
+        img_topic = "/camera/image"
         self.image_sub = rospy.Subscriber(img_topic, Image, self.callback)
 
         # Allow up to one second to connection
