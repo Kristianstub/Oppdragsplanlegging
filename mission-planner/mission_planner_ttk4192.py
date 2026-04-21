@@ -137,7 +137,7 @@ class turtlebot_move():
     """
     Path-following module
     """
-    def __init__(self):
+    def __init__(self, points):
         rospy.init_node('turtlebot_move', anonymous=False)
         rospy.loginfo("Press CTRL + C to terminate")
         rospy.on_shutdown(self.stop)
@@ -155,7 +155,7 @@ class turtlebot_move():
         self.trajectory = list()
 
         # track a sequence of waypoints
-        for point in WAYPOINTS:
+        for point in points:
             self.move_to_point(point[0], point[1])
             rospy.sleep(1)
         self.stop()
@@ -312,27 +312,6 @@ def taking_photo_exe():
     shutil.move(file_source + g, file_destination)
     rospy.sleep(1)
 
-def move_robot_waypoint0_waypoint1():
-    # This function executes Move Robot from 1 to 2
-    # This function uses hybrid A-star
-    a=0
-    while a<3:
-        print("Excuting Mr12")
-        time.sleep(1)
-        a=a+1
-    print("Computing hybrid A* path")
-	
-    p = argparse.ArgumentParser()
-    p.add_argument('-heu', type=int, default=1, help='heuristic type')
-    p.add_argument('-r', action='store_true', help='allow reverse or not')
-    p.add_argument('-e', action='store_true', help='add extra cost or not')
-    p.add_argument('-g', action='store_true', help='show grid or not')
-    args = p.parse_args()
-    start_pos = [2, 2, 0]
-    end_pos = [6, 6, 3*pi/4]
-    main_hybrid_a(args.heu,start_pos,end_pos,args.r,args.e,args.g)
-    print("Executing path following")
-    turtlebot_move()
 
 
 def Manipulate_OpenManipulator_x():
@@ -405,7 +384,7 @@ def check_seals_valve_picture_eo_waypoint0():
 
 # Charging battery 
 def charge_battery_waypoint0():
-    print("chargin battert")
+    print("chargin battery")
     time.sleep(5)
 
 
@@ -418,6 +397,8 @@ def move_turtlebot_to_waypoint(args):
     waypointStr = args[2]
     waypointIndex = int(waypointStr[len("waypoint"):])
     waypoint = WAYPOINTS[waypointIndex]
+    
+    turtlebot_move([waypoint])
 
 
 
