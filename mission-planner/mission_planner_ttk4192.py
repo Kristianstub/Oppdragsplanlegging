@@ -31,6 +31,7 @@ import copy
 from hybridAStarPathfinding import main_hybrid_a
 from waypoints import WAYPOINTS
 import subprocess
+from pathlib import Path
 
 """ ----------------------------------------------------------------------------------
 Mission planner for Autonomos robots: TTK4192,NTNU. 
@@ -42,31 +43,48 @@ version: 1.1
 
 
 # 1) Program here your AI planner 
-"""
-Graph plan ---------------------------------------------------------------------------
-"""
-class GraphPlan(object):
-    def __init__(self, domain, problem):
-        self.independentActions = []
-        self.noGoods = []
-        self.graph = []
 
-    def graphPlan(self):
-        # initialization
-        initState = self.initialState
+def calculate_temporal_plan(cache=False):
+    script_dir = Path(__file__).resolve().parent
+    temporal_planning_dir = script_dir / '../temporal-planning-main'
 
-    def extract(self, Graph, subGoals, level):
+    if cache:
+        with open(temporal_planning_dir / 'plan', 'r') as file:
+            return file.read()
 
-        if level == 0:
-            return []
-        if subGoals in self.noGoods[level]:
-            return None
-        plan = self.gpSearch(Graph, subGoals, [], level)
-        if plan is not None:
-            return plan
-        self.noGoods[level].append([subGoals])
-        return None
+    plan_script = temporal_planning_dir / 'calculatePlan.sh'
+    result = subprocess.run([plan_script], capture_output=True, text=True)
+    if result.stderr:
+        print("Errors:", result.stderr)
+        raise Exception("Could not calulate plan.")
 
+    planStr = result.stdout
+    return planStr
+
+def parse_plan(plan_str):
+    actions = []
+    pattern = r'(\d+\.\d+):\s*\(\s*(.+?)\s*\)\s*\[(\d+\.\d+)\]'
+    
+    for match in re.finditer(pattern, plan_str):
+        time = float(match.group(1))
+        action_parts = match.group(2).split()
+        duration = float(match.group(3))
+        
+        actions.append({
+            'time': time,
+            'action': action_parts[0],
+            'args': action_parts[1:],
+            'duration': duration
+        })
+    
+    return actions
+
+def calculate_plan(cache=False):
+    print("Calculating plan...")
+
+    plan_str = calculate_temporal_plan(True)
+
+    return parse_plan(plan_str)
 
 #2) GNC module (path-followig and PID controller for the robot)
 """  Robot GNC module ----------------------------------------------------------------------
@@ -396,6 +414,13 @@ def charge_battery_waypoint0():
 # WAYPOINTS = [[1,1],[2,2]]
 # These are included at the top
 
+def move_turtlebot_to_waypoint(turtlebot_mover: turtblebot_move, args):
+    waypointStr = args[2]
+    waypointIndex = int(waypointStr[len("waypoint"):])
+    waypoint = WAYPOINTS[waypointIndex]
+
+    turtlebot_mover.move_to_point()
+
 
 # 5) Program here the main commands of your mission planner code
 """ Main code ---------------------------------------------------------------------------
@@ -414,7 +439,7 @@ if __name__ == '__main__':
         print("**************************************************************")
         print()
         print("Press Intro to start ...")
-        input_t=input("")
+        #input_t=input("")
         # 5.0) Testing the GNC module (uncomment lines to test)
 
         # aea
@@ -422,25 +447,24 @@ if __name__ == '__main__':
         # aea 3
         # aea 4
         
+        turtlebot_mover = turtlebot_move()
 
 	# 5.1) Make a plan using temporal planner
-
-        script_dir = Path(__file__).parent
-        plan_script = script_dir / '../temporal-planning-main/temporal-planning/calculatePlan.sh'
-        result = subprocess.run([plan_script], capture_output=True, text=True)
-        print(result)
-
-        exit(1)
-
-    
         # 5.2) Reading the plan 
-        print("  ")
-        print("Reading the plan from AI planner")
-        print("  ")
-        plan_general=plan_general
-        print(plan_general[0])
+        plan_general = calculate_plan()
 
         # 5.3) Start mission execution 
+        for step in plan_general:
+            if step['action'] == 'move':
+                print("Move turlebot", step['args'])
+                move_turtlebot_to_waypoint(turtlebot_mover, step['args'])
+            elif step['action'] == 'take_picture':
+                print("Take picture")
+            elif step['action'] == 'manipulate_valve':
+                print("Manipulate valve")
+
+        exit(0)
+
         # convert string into functions and executing
         print("")
         print("Starting mission execution")
