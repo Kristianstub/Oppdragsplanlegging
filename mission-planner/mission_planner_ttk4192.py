@@ -44,7 +44,7 @@ version: 1.1
 
 # 1) Program here your AI planner 
 
-def calculate_temporal_plan(cache=False):
+def calculate_temporal_plan(cache):
     script_dir = Path(__file__).resolve().parent
     temporal_planning_dir = script_dir / '../temporal-planning-main'
 
@@ -82,7 +82,7 @@ def parse_plan(plan_str):
 def calculate_plan(cache=False):
     print("Calculating plan...")
 
-    plan_str = calculate_temporal_plan(True)
+    plan_str = calculate_temporal_plan(cache)
 
     return parse_plan(plan_str)
 
@@ -414,12 +414,11 @@ def charge_battery_waypoint0():
 # WAYPOINTS = [[1,1],[2,2]]
 # These are included at the top
 
-def move_turtlebot_to_waypoint(turtlebot_mover: turtblebot_move, args):
+def move_turtlebot_to_waypoint(args):
     waypointStr = args[2]
     waypointIndex = int(waypointStr[len("waypoint"):])
     waypoint = WAYPOINTS[waypointIndex]
 
-    turtlebot_mover.move_to_point()
 
 
 # 5) Program here the main commands of your mission planner code
@@ -447,17 +446,15 @@ if __name__ == '__main__':
         # aea 3
         # aea 4
         
-        turtlebot_mover = turtlebot_move()
-
 	# 5.1) Make a plan using temporal planner
         # 5.2) Reading the plan 
-        plan_general = calculate_plan()
+        plan_general = calculate_plan(cache=True)
 
         # 5.3) Start mission execution 
         for step in plan_general:
             if step['action'] == 'move':
                 print("Move turlebot", step['args'])
-                move_turtlebot_to_waypoint(turtlebot_mover, step['args'])
+                move_turtlebot_to_waypoint(step['args'])
             elif step['action'] == 'take_picture':
                 print("Take picture")
             elif step['action'] == 'manipulate_valve':
