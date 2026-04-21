@@ -24,7 +24,6 @@
     (:functions
         (route-length ?r - route)
         (speed ?v - vehicle)
-        (battery_level ?v - vehicle)
         (duration_picture)
         (duration_manipulate)
         (duration_charge)
@@ -75,7 +74,6 @@
         )
         :effect (and
             (at end (charged ?v))
-            (at end (assign (battery_level ?v) 100))
         )
     )
 )
