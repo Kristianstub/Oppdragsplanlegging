@@ -8,7 +8,7 @@ from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from math import pi, sqrt, atan2, tan
 from os import system, name
-from time import time
+import time
 import re
 import fileinput
 import sys
