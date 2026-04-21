@@ -3,6 +3,9 @@ set -e
 
 ./setupSymlink.sh
 
+# Install UV
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
 # Install the python packages for venv
 virtualenv --python=python2.7 ./temporal-planning-main
 
