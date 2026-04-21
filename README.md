@@ -55,3 +55,20 @@ Open the world file in Gazebo by running. (This requires a GUI)
 ```bash
 gazebo ~/catkin_ws/src/turtlebot3_simulations/turtlebot3_gazebo/worlds/turtlebot3_ttk4192.world
 ```
+
+### Task 7 and 8 - GNC
+
+Make sure UV is installed, see `install.sh`.
+
+Set up the venv to get all the packages needed. First download the dependencides
+
+```bash
+cd 8-GNC
+uv sync
+```
+
+Then activate the venv.
+```bash
+source .venv/bin/active
+```
+
