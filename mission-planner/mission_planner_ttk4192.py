@@ -425,7 +425,12 @@ if __name__ == '__main__':
 
 	# 5.1) Make a plan using temporal planner
 
-        result = subprocess.run(['./plan.sh', '1'], capture_output=True, text=True)
+        script_dir = Path(__file__).parent
+        plan_script = script_dir / '../temporal-planning-main/temporal-planning/calculatePlan.sh'
+        result = subprocess.run([plan_script], capture_output=True, text=True)
+        print(result)
+
+        exit(1)
 
     
         # 5.2) Reading the plan 
