@@ -221,6 +221,7 @@ class turtlebot_move():
             self.vel_pub.publish(self.vel)
             self.rate.sleep()
         self.stop()
+
     def stop(self):
         self.vel.linear.x = 0
         self.vel.angular.z = 0
