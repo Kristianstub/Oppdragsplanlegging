@@ -313,7 +313,10 @@ class HybridAstar:
     def astar_heuristic(self, pos):
         """ Heuristic by standard astar. """
 
-        h1 = self.astar.search_path(pos[:2]) * self.grid.cell_size
+        h1 = self.astar.search_path(pos[:2])
+        if h1 is None:
+            h1 = self.simple_heuristic(pos[:2]) / self.grid.cell_size
+        h1 *= self.grid.cell_size
         h2 = self.simple_heuristic(pos[:2])
 
         return self.w1*h1 + self.w2*h2

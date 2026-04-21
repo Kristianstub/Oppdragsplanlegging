@@ -83,9 +83,12 @@ class HybridAstar:
     def astar_heuristic(self, pos):
         """ Heuristic by standard astar. """
 
-        h1 = self.astar.search_path(pos[:2]) * self.grid.cell_size
+        h1 = self.astar.search_path(pos[:2])
+        if h1 is None:
+            h1 = self.simple_heuristic(pos[:2]) / self.grid.cell_size
+        h1 *= self.grid.cell_size
         h2 = self.simple_heuristic(pos[:2])
-        
+
         return self.w1*h1 + self.w2*h2
 
     def get_children(self, node, heu, extra):
@@ -423,9 +426,9 @@ if __name__ == '__main__':
     args = p.parse_args()
 
     legs = [
-        ([1.71, 0.69, 0],    [3.4,  0.92, 0]   ),  # wp1 -> wp2
-        ([3.4,  0.92, 0],    [3.3,  2.7,  pi/2] ),  # wp2 -> wp3
-        ([3.3,  2.7,  -pi/2],[5.19, 0.21, 0]   ),  # wp3 -> wp4
+        ([1.71, 0.50, 0], [3.4,  1.05, 0]),  # wp1 -> wp2
+        ([3.4,  1.05, 0], [3.3,  2.50, 0]),  # wp2 -> wp3
+        ([3.3,  2.50, 0], [4.7,  0.40, 0]),  # wp3 -> wp4
     ]
 
     for start_pos, end_pos in legs:
