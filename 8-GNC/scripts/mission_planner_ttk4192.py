@@ -470,7 +470,7 @@ class HybridAstar:
 def main_hybrid_a(heu,start_pos, end_pos,reverse, extra, grid_on):
 
     tc = map_grid_robplan()
-    env = Environment_robplan(tc.obs)
+    env = Environment_robplan(tc.obs, lx=5.21, ly=2.75)
     car = SimpleCar(env, start_pos, end_pos)
     grid = Grid_robplan(env)
 
@@ -509,11 +509,8 @@ def main_hybrid_a(heu,start_pos, end_pos,reverse, extra, grid_on):
         elif dt_s*i<len(path):
             xl_np1.append(path[i*dt_s].pos[0])
             yl_np1.append(path[i*dt_s].pos[1])      
-    # defining way-points (traslandado el origen a (0,0))
     xl_np=np.array(xl_np1)
-    xl_np=xl_np-20
     yl_np=np.array(yl_np1)
-    yl_np=yl_np-11.2
     global WAYPOINTS
     WAYPOINTS=np.column_stack([xl_np,yl_np])
     #print(WAYPOINTS)
@@ -617,14 +614,13 @@ def main_hybrid_a(heu,start_pos, end_pos,reverse, extra, grid_on):
 
 class map_grid_robplan:
     def __init__(self):
-
-        self.start_pos2 = [4, 4, 0]
-        self.end_pos2 = [4, 8, -pi]
         self.obs = [
-            [25, 0, 15, 2], 
-            [0, 0, 1.37, 1.37],   
-            [38.6, 2, 1.37, 1.37], 
-            [25.5, 21, 1.37, 1.37],   
+            [1.2,  1.45, 0.2,  0.4],
+            [2.5,  1.45, 0.4,  0.4],
+            [1.55, 0.7,  0.5,  0.2],
+            [3.16, 0.7,  0.5,  0.2],
+            [3.56, 1.75, 0.5,  0.2],
+            [3.3,  0.0,  1.91, 0.2],
         ]
 
 
@@ -690,24 +686,16 @@ def taking_photo_exe():
     rospy.sleep(1)
 
 def move_robot_waypoint0_waypoint1():
-    # This function executes Move Robot from 1 to 2
-    # This function uses hybrid A-star
-    a=0
-    while a<3:
-        print("Excuting Mr12")
-        time.sleep(1)
-        a=a+1
     print("Computing hybrid A* path")
-	
     p = argparse.ArgumentParser()
-    p.add_argument('-heu', type=int, default=1, help='heuristic type')
-    p.add_argument('-r', action='store_true', help='allow reverse or not')
-    p.add_argument('-e', action='store_true', help='add extra cost or not')
-    p.add_argument('-g', action='store_true', help='show grid or not')
-    args = p.parse_args()
-    start_pos = [2, 2, 0]
-    end_pos = [6, 6, 3*pi/4]
-    main_hybrid_a(args.heu,start_pos,end_pos,args.r,args.e,args.g)
+    p.add_argument('-heu', type=int, default=1)
+    p.add_argument('-r', action='store_true')
+    p.add_argument('-e', action='store_true')
+    p.add_argument('-g', action='store_true')
+    args, _ = p.parse_known_args()
+    start_pos = [0.11, 0.11, 0]
+    end_pos   = [1.71, 0.69, 0]
+    main_hybrid_a(args.heu, start_pos, end_pos, args.r, args.e, args.g)
     print("Executing path following")
     turtlebot_move()
 
