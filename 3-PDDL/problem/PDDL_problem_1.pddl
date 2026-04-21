@@ -15,13 +15,13 @@
   )
 
   (:init
-    (= (speed turtlebot0) 0.90)
+    (= (speed turtlebot0) 0.18)
     (= (duration_picture) 5)
     (= (duration_manipulate) 10)
     (= (duration_charge) 20)
 
-    ; robot starts at wp4 (from figure)
-    (at turtlebot0 waypoint4)
+    ; robot starts at wp0 (Table 1, Case 1)
+    (at turtlebot0 waypoint0)
 
     ; objects at waypoints (from figure)
     (at_obj charger0 waypoint0)
@@ -134,6 +134,7 @@
   )
 
   (:goal (and
+    (at turtlebot0 waypoint3)
     (valve_manipulated valve0)
     (valve_manipulated valve1)
     (picture_taken waypoint5)
