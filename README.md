@@ -24,6 +24,20 @@ If you for some reason need to create the symlinks again, do so by running.
 ./setupSymlink.sh
 ```
 
+## Show the simulation
+
+Run these commands in the background.
+
+Start the core, this will forward messages where they should go.
+```bash
+roscore
+```
+
+To visualize the simulation, use the folliwing command
+```bash
+./6-Gazebo/testgazebo.sh
+```
+
 ## Some useful commands for the different tasks
 
 ### Task 5 - Compute a plan
