@@ -31,7 +31,7 @@ Install UV using the comamnd below.
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-## Some useful command for the different tasks
+## Some useful commands for the different tasks
 
 ### Task 5 - Compute a plan
 
@@ -56,6 +56,16 @@ Open the world file in Gazebo by running. (This requires a GUI)
 gazebo ~/catkin_ws/src/turtlebot3_simulations/turtlebot3_gazebo/worlds/turtlebot3_ttk4192.world
 ```
 
+To show the map with the robot, use these commands.
+
+```bash
+cd ~/catkin_ws && catkin_make
+export TURTLEBOT3_MODEL=waffle_pi
+source devel/setup.bash
+roslaunch turtlebot3_gazebo turtlebot3_ttk4192.launch
+rqt
+```
+
 ### Task 7 and 8 - GNC
 
 Make sure UV is installed, see `install.sh`.
@@ -70,5 +80,12 @@ uv sync
 Then activate the venv.
 ```bash
 source .venv/bin/active
+```
+
+To test if the mission planner works run these commands:
+```bash
+cd ~/catkin_ws
+source devel/setup.bash
+rosrun assigment4_ttk4192 mission_planner_ttk4192.py
 ```
 
