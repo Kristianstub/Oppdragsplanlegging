@@ -30,17 +30,21 @@ Install UV using the comamnd below.
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
-# Run PDDL 
 
+## Some useful command for the different tasks
+
+### Task 5 - Compute a plan
+
+Compute a plan using the pddl files:
 
 ```bash
-catkin ws/src
-
+cd catkin_ws/src
 source temporal-planning-main/bin/activate
-
 cd temporal-planning-main/temporal-planning/
 
-python2.7 bin/plan.py stp-2 /home/ttk4192/catkin_ws/src/temporal-planning-main/temporal-planning/domains/ttk4192/domain/PDDL_domain_1.pddl /home/ttk4192/catkin_ws/src/temporal-planning-main/temporal-planning/domains/ttk4192/problem/PDDL_problem_1.pddl
+python2.7 bin/plan.py stp-2 ~/catkin_ws/src/temporal-planning-main/temporal-planning/domains/ttk4192/domain/PDDL_domain_1.pddl ~/catkin_ws/src/temporal-planning-main/temporal-planning/domains/ttk4192/problem/PDDL_problem_1.pddl
 ```
+
 You can then see the plan here:
 temporal-planning-main/temporal-planning/,tmp sas plan.1"
+

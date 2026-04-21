@@ -13,5 +13,5 @@ pip install -r requirements.txt
 
 cd temporal-planning
 ./build.sh
-
+python2.7 fd_copy/build.py release64
 
