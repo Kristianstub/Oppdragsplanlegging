@@ -5,7 +5,7 @@ This is a repo containing code for the trutlebot.
 ## Installation
 
 Before cloning and installation, make sure ROS 1 is installed and that the `catkin_ws` folder is filled with the github repos.
-Then clone the repo, including the submodules like this:
+Then clone the repo, including the submodules like shown below. Do not clone the repo inside `catkin_ws`.
 
 ```bash
 git clone --recursive git@github.com:Kristianstub/Oppdragsplanlegging.git
@@ -22,13 +22,6 @@ Installation script:
 If you for some reason need to create the symlinks again, do so by running.
 ```bash
 ./setupSymlink.sh
-```
-
-For the later tasks, where python3 is needed, UV is a super smooth package and project manager.
-Install UV using the comamnd below.
-
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
 ## Some useful commands for the different tasks
@@ -59,10 +52,7 @@ gazebo ~/catkin_ws/src/turtlebot3_simulations/turtlebot3_gazebo/worlds/turtlebot
 To show the map with the robot, use these commands.
 
 ```bash
-cd ~/catkin_ws && catkin_make
-export TURTLEBOT3_MODEL=waffle_pi
-source devel/setup.bash
-roslaunch turtlebot3_gazebo turtlebot3_ttk4192.launch
+./6-Gazebo/testgazebo.sh
 rqt
 ```
 
