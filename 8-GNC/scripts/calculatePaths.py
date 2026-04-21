@@ -6,7 +6,7 @@ from waypoints import WAYPOINTS
 def main():
     Path("figures").mkdir(parents=True, exist_ok=True)
 
-    for i in range(2, len(WAYPOINTS)):
+    for i in range(2, max(len(WAYPOINTS), 5)):
         start_pos = WAYPOINTS[i - 1]
         end_pos = WAYPOINTS[i]
         fig, ax = main_hybrid_a(1, start_pos, end_pos, True, False, True, show_plot=False)

@@ -432,7 +432,7 @@ if __name__ == '__main__':
                 print("Usage: GraphPlan.py domainName problemName")
                 exit()
             # Here you need to load your PDDL domain
-           dir_p="/home/miguel/catkin_ws/src/assigment4_ttk4192/scripts/ai_planner_modules/PDDL_domain/"
+           dir_p="~/catkin_ws/src/assigment4_ttk4192/scripts/ai_planner_modules/PDDL_domain/"
            domain = dir_p+"dwrDomain_turtlebot.txt"
            problem = dir_p+"dwrProblem_turtlebot.txt"
            if len(sys.argv) == 3:
