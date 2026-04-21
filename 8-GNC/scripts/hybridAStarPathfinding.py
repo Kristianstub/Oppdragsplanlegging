@@ -246,12 +246,19 @@ class HybridAstar:
         return None, None
 
 
-def main_hybrid_a(heu,start_pos, end_pos,reverse, extra, grid_on):
+def main_hybrid_a(heu,start_pos, end_pos,reverse, extra, grid_on, show_plot=True):
+
 
     tc = map_grid()
     env = Environment(tc.obs, lx=5.21, ly=2.75)
-    car = SimpleCar(env, start_pos, end_pos, l=0.3, max_phi=pi/3)
-    grid = Grid(env)
+    car = SimpleCar(env, start_pos, end_pos, l=0.05, max_phi=pi/5)
+    grid = Grid(env, cell_size=0.10)
+
+    if not car.is_pos_safe(start_pos):
+        raise Exception("Start position is inside an obstacle!")
+
+    if not car.is_pos_safe(end_pos):
+        raise Exception("End position is inside an obstacle!")
 
     hastar = HybridAstar(car, grid, reverse)
 
@@ -298,7 +305,7 @@ def main_hybrid_a(heu,start_pos, end_pos,reverse, extra, grid_on):
     end_state = car.get_car_state(car.end_pos)
 
     # plot and annimation
-    fig, ax = plt.subplots(figsize=(6,6))
+    fig, ax = plt.subplots(figsize=(12,8))
     ax.set_xlim(0, env.lx)
     ax.set_ylim(0, env.ly)
     ax.set_aspect("equal")
@@ -375,10 +382,14 @@ def main_hybrid_a(heu,start_pos, end_pos,reverse, extra, grid_on):
 
         return _branches, _path, _carl, _path1, _car
 
-    ani = animation.FuncAnimation(fig, animate, init_func=init, frames=frames,
-                                  interval=1, repeat=True, blit=True)
+    if show_plot:
+        ani = animation.FuncAnimation(fig, animate, init_func=init, frames=frames, interval=1, repeat=True, blit=True)
+        plt.show()
+    else:
+        init()
+        animate(frames // 2)
 
-    plt.show()
+    return fig, ax
 
 class Node:
     """ Hybrid A* tree node. """
@@ -435,7 +446,7 @@ if __name__ == '__main__':
     p.add_argument('-e', action='store_true', help='add extra cost or not')
     p.add_argument('-g', action='store_true', help='show grid or not')
     args = p.parse_args()
-    start_pos = [0.2, 0.2, 0]      # Here defined initial position [x,y,angle]
-    end_pos = [4.5, 2, 1*pi/4] # Target point [x,y, angle]
+    start_pos = [0.11, 0.11, 0]      # Here defined initial position [x,y,angle]
+    end_pos = [1.71, 0.52, pi/2] # Target point [x,y, angle]
     main_hybrid_a(args.heu,start_pos,end_pos,args.r,args.e,args.g)
     print("An optimal path was computed using hybrid A* algorithm")
