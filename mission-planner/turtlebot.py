@@ -4,17 +4,11 @@ from nav_msgs.msg import Odometry
 import numpy as np
 import tf
 from pid import PID
-from waypoints import Waypoint
+from position import Position
+from pointUtils import *
+from typing import List
 
-def point_subtract(lhs: Point, rhs: Point) -> Point:
-    return Point(
-        lhs.x - rhs.x,
-        lhs.y - rhs.y,
-        lhs.z - rhs.z
-    )
-
-def point2vector2D(point: Point) -> np.ndarray:
-    return np.array([point.x, point.y])
+TURTLEBOT_START_POSITION = Point(0.2, 0.2, 0)
 
 class Turtlebot():
     """
@@ -30,7 +24,7 @@ class Turtlebot():
         rospy.loginfo("Turtlebot controller initiated.")
         rospy.on_shutdown(self.stop)
 
-        self.position = Point(0, 0, 0)
+        self.position = TURTLEBOT_START_POSITION
         self.yaw = 0.0
         self.velocity = Twist()
         self.odom_sub = rospy.Subscriber("odom", Odometry, self.odom_callback) # subscribing to the odometer
@@ -91,9 +85,18 @@ class Turtlebot():
 
         self.stop()
 
-    def move_to_waypoint(self, waypoint: Waypoint):
-        self.move_to_point(waypoint.getPoint())
-        self.turn_around(waypoint.getYaw())
+    def move_to_position(self, position: Position):
+        self.move_to_point(position.getPoint())
+        self.turn_around(position.getYaw())
+    
+    def follow_route(self, route: List[Position]):
+        
+        for position in route[:-1]:
+            print(f"Move to {position}")
+            self.move_to_point(position.getPoint())
+        
+        print(f"Moving to final postion {route[-1]}")
+        self.move_to_position(route[-1])
 
     def stop(self):
         self.velocity = Twist()
@@ -106,4 +109,10 @@ class Turtlebot():
                     msg.pose.pose.orientation.z, msg.pose.pose.orientation.w]
         (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(quarternion)
         self.yaw = yaw
-        self.position = msg.pose.pose.position
+        self.position = point_add(msg.pose.pose.position, TURTLEBOT_START_POSITION)
+    
+    def getPosition(self) -> Position:
+        return Position(self.position.x, self.position.y, self.yaw) 
+    
+    def getYaw(self) -> float:
+        return self.yaw

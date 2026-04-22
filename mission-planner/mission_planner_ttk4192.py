@@ -10,10 +10,6 @@ from math import pi, sqrt, atan2, tan
 from os import system, name
 import time
 import re
-import fileinput
-import sys
-import argparse
-import random
 import matplotlib.animation as animation
 from datetime import datetime
 from matplotlib.collections import PatchCollection, LineCollection
@@ -30,9 +26,11 @@ import copy
 # Import here the packages used in your codes
 from hybridAStarPathfinding import main_hybrid_a
 from waypoints import WAYPOINTS
+from position import Position
 import subprocess
 from pathlib import Path
 from turtlebot import Turtlebot
+from guidance import calulateRoute
 
 """ ----------------------------------------------------------------------------------
 Mission planner for Autonomos robots: TTK4192,NTNU. 
@@ -92,6 +90,19 @@ def calculate_plan(cache=False):
 """
 
 # This is imported at the top
+
+def move_turtlebot_to_waypoint(turtlebot: Turtlebot, args):
+    waypointStr = args[2]
+    waypointIndex = int(waypointStr[len("waypoint"):])
+    waypoint = WAYPOINTS[waypointIndex]
+
+    print(f"Moving to Waypoint: {waypoint}")
+
+    # Calculate Path
+    turtlebotPosition = turtlebot.getPosition()
+    route = calulateRoute(turtlebotPosition, waypoint)
+    
+    turtlebot.follow_route(route)
 
 # 3) Program here your path-finding algorithm
 """ Hybrid A-star pathfinding --------------------------------------------------------------------
@@ -241,12 +252,6 @@ def charge_battery_waypoint0():
 # WAYPOINTS = [[1,1],[2,2]]
 # These are included at the top
 
-def move_turtlebot_to_waypoint(turtlebot: Turtlebot, args):
-    waypointStr = args[2]
-    waypointIndex = int(waypointStr[len("waypoint"):])
-    waypoint = WAYPOINTS[waypointIndex]
-    
-    turtlebot.move_to_waypoint(waypoint)
 
 
 

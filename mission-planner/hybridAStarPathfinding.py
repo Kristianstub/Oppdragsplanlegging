@@ -389,7 +389,7 @@ def main_hybrid_a(heu,start_pos, end_pos,reverse, extra, grid_on, show_plot=True
         init()
         animate(int(frames * 0.3))
 
-    return fig, ax
+    return path, fig, ax
 
 class Node:
     """ Hybrid A* tree node. """
