@@ -138,8 +138,6 @@ class Turtlebot():
         if not path:
             return
 
-        print("Using pure pursuit with aggressive closed-loop feedback and tighter waypoints")
-        
         max_lateral_error = 0.0
         min_speed_recorded = MAX_LINEAR_SPEED
         

@@ -21,7 +21,7 @@
     (= (duration_charge) 20)
 
     ; robot starts at wp2 (Table 1, Case 1)
-    (at turtlebot0 waypoint2)
+    (at turtlebot0 waypoint0)
 
     ; objects at waypoints (from figure)
     (at_obj charger0 waypoint0)

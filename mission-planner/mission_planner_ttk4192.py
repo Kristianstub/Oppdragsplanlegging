@@ -94,7 +94,7 @@ def calculate_plan(cache=False):
 def move_turtlebot_to_position(turtlebot: Turtlebot, position: Position):
     print(f"Moving to {position}")
     turtlebotPosition = turtlebot.getPosition()
-    route = calulateRoute(turtlebotPosition, position, plot_route=True)
+    route = calulateRoute(turtlebotPosition, position, plot_route=False)
     
     turtlebot.follow_route(route)
 
@@ -121,13 +121,23 @@ class TakePhoto:
 
         self.bridge = CvBridge()
         self.image_received = False
+        self.image = None
 
         # Connect image topic
-        img_topic = "/camera/image"
+        img_topic = "/camera/rgb/image"
         self.image_sub = rospy.Subscriber(img_topic, Image, self.callback)
 
-        # Allow up to one second to connection
-        rospy.sleep(1)
+        # Wait for first image with timeout (up to 5 seconds)
+        rospy.loginfo("Waiting for camera to start publishing...")
+        start_time = rospy.get_time()
+        timeout = 5.0
+        while not self.image_received and (rospy.get_time() - start_time) < timeout:
+            rospy.sleep(0.1)
+        
+        if self.image_received:
+            rospy.loginfo("Camera image stream connected")
+        else:
+            rospy.logwarn("Camera not responding after 5 seconds")
 
     def callback(self, data):
 
@@ -136,16 +146,19 @@ class TakePhoto:
             cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
         except CvBridgeError as e:
             print(e)
+            return
 
         self.image_received = True
         self.image = cv_image
 
     def take_picture(self, img_title):
-        if self.image_received:
+        if self.image_received and self.image is not None:
             # Save an image
             cv2.imwrite(img_title, self.image)
+            rospy.loginfo(f"Picture saved: {img_title}")
             return True
         else:
+            rospy.logwarn("No image available to save")
             return False
         
 def taking_photo_exe():
@@ -157,20 +170,31 @@ def taking_photo_exe():
     dt_string = now.strftime("%d%m%Y_%H%M%S")
     img_title = rospy.get_param('~image_title', 'photo'+dt_string+'.jpg')
 
-    if camera.take_picture(img_title):
-        rospy.loginfo("Saved image " + img_title)
-    else:
-        rospy.loginfo("No images received")
-	#eog photo.jpg
-    # Sleep to give the last log messages time to be sent
-
-	# saving photo in a desired directory
+    # Retry taking picture if first attempt fails
+    max_retries = 3
+    retry_count = 0
+    while retry_count < max_retries:
+        if camera.take_picture(img_title):
+            rospy.loginfo("Saved image " + img_title)
+            break
+        else:
+            retry_count += 1
+            if retry_count < max_retries:
+                rospy.logwarn(f"Failed to capture image, retrying... ({retry_count}/{max_retries})")
+                rospy.sleep(1.0)
+            else:
+                rospy.logerr(f"No image received after {max_retries} attempts at waypoint5")
+    
+    # saving photo in a desired directory
     file_source = '/home/miguel/catkin_ws/'
     file_destination = '/home/miguel/catkin_ws/src/assigment4_ttk4192/scripts'
     g='photo'+dt_string+'.jpg'
 
-    shutil.move(file_source + g, file_destination)
-    rospy.sleep(1)
+    try:
+        shutil.move(file_source + g, file_destination)
+        rospy.sleep(1)
+    except Exception as e:
+        rospy.logwarn(f"Could not move image file: {e}")
 
 
 

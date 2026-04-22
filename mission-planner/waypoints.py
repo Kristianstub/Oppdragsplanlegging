@@ -3,10 +3,10 @@ from position import Position
 
 WAYPOINTS = [
     Position(0.16, 0.16, 0),
-    Position(1.71, 0.47, np.pi/2),
+    Position(1.71, 0.4, np.pi/2),
     Position(3.4, 1.2, -np.pi/2),
     Position(3.3, 2.5, np.pi/2),
-    Position(5, 0.4, -np.pi/2),
+    Position(4.9, 0.5, -np.pi/2),
     Position(0.92, 2.5, np.pi/2),
     Position(3.8, 1.4, np.pi/2)
 ]
