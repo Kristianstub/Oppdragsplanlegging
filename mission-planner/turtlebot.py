@@ -7,6 +7,7 @@ from pid import PID
 from position import Position
 from pointUtils import *
 from typing import List
+from control import *
 
 TURTLEBOT_START_POSITION = Point(0.2, 0.2, 0)
 
@@ -41,6 +42,10 @@ class Turtlebot():
     def set_velocity(self, linear: float, angular: float):
         self.velocity.linear.x = linear
         self.velocity.angular.z = angular
+        self.vel_pub.publish(self.velocity)
+
+    def set_twist(self, twist: Twist):
+        self.velocity = twist
         self.vel_pub.publish(self.velocity)
     
     def turn_around(self, targetYaw: float):
@@ -90,12 +95,29 @@ class Turtlebot():
         self.turn_around(position.getYaw())
     
     def follow_route(self, route: List[Position]):
+
+        path = [vertex.getPoint() for vertex in route]
+
+        LOOKAHEAD_DISTANCE = 0.8
+
+        print("Using pure pursuit")
+        while not rospy.is_shutdown():
+            lookahead_point = find_lookahead_point(path, self.position, LOOKAHEAD_DISTANCE)
+            if lookahead_point is None:
+                break
+            targetTwist = pure_pursuit(self.getPosition(), lookahead_point, LOOKAHEAD_DISTANCE, self.speed)
+            self.set_twist(targetTwist)
+            self.rate.sleep()
         
-        for position in route[:-1]:
-            print(f"Move to {position}")
-            self.move_to_point(position.getPoint())
-        
-        print(f"Moving to final postion {route[-1]}")
+        # targetPoint = path[-1]
+        # while not rospy.is_shutdown():
+        #     position_error = point_subtract(self.position, targetPoint)
+        #     position_error_vector = point2vector2D(position_error)
+        #     distance_left = np.linalg.norm(position_error_vector)
+        #     if distance_left < self.POSITION_TARGET_THRESHOLD:
+        #         break
+
+        print("Moving to the last Position")
         self.move_to_position(route[-1])
 
     def stop(self):

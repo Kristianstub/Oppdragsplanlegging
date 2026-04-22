@@ -91,18 +91,19 @@ def calculate_plan(cache=False):
 
 # This is imported at the top
 
+def move_turtlebot_to_position(turtlebot: Turtlebot, position: Position):
+    print(f"Moving to {position}")
+    turtlebotPosition = turtlebot.getPosition()
+    route = calulateRoute(turtlebotPosition, position, plot_route=True)
+    
+    turtlebot.follow_route(route)
+
 def move_turtlebot_to_waypoint(turtlebot: Turtlebot, args):
     waypointStr = args[2]
     waypointIndex = int(waypointStr[len("waypoint"):])
     waypoint = WAYPOINTS[waypointIndex]
 
-    print(f"Moving to Waypoint: {waypoint}")
-
-    # Calculate Path
-    turtlebotPosition = turtlebot.getPosition()
-    route = calulateRoute(turtlebotPosition, waypoint)
-    
-    turtlebot.follow_route(route)
+    move_turtlebot_to_position(turtlebot, waypoint)
 
 # 3) Program here your path-finding algorithm
 """ Hybrid A-star pathfinding --------------------------------------------------------------------
@@ -285,6 +286,8 @@ if __name__ == '__main__':
         plan_general = calculate_plan(cache=True)
 
         turtlebot = Turtlebot()
+
+        move_turtlebot_to_position(turtlebot, WAYPOINTS[2])
 
         # 5.3) Start mission execution 
         for step in plan_general:

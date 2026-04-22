@@ -246,7 +246,7 @@ class HybridAstar:
         return None, None
 
 
-def main_hybrid_a(heu,start_pos, end_pos,reverse, extra, grid_on, show_plot=True):
+def main_hybrid_a(heu,start_pos, end_pos,reverse, extra, grid_on, animation=True):
 
 
     tc = map_grid()
@@ -382,9 +382,8 @@ def main_hybrid_a(heu,start_pos, end_pos,reverse, extra, grid_on, show_plot=True
 
         return _branches, _path, _carl, _path1, _car
 
-    if show_plot:
+    if animation:
         ani = animation.FuncAnimation(fig, animate, init_func=init, frames=frames, interval=1, repeat=True, blit=True)
-        plt.show()
     else:
         init()
         animate(int(frames * 0.3))
