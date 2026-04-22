@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import rospy
 import os
 import tf
@@ -31,6 +32,7 @@ import subprocess
 from pathlib import Path
 from turtlebot import Turtlebot
 from guidance import calulateRoute
+from environment import ProgramEnvironment
 
 """ ----------------------------------------------------------------------------------
 Mission planner for Autonomos robots: TTK4192,NTNU. 
@@ -91,19 +93,19 @@ def calculate_plan(cache=False):
 
 # This is imported at the top
 
-def move_turtlebot_to_position(turtlebot: Turtlebot, position: Position):
+def move_turtlebot_to_position(turtlebot: Turtlebot, position: Position, plot_route: bool):
     print(f"Moving to {position}")
     turtlebotPosition = turtlebot.getPosition()
-    route = calulateRoute(turtlebotPosition, position, plot_route=False)
+    route = calulateRoute(turtlebotPosition, position, plot_route)
     
     turtlebot.follow_route(route)
 
-def move_turtlebot_to_waypoint(turtlebot: Turtlebot, args):
+def move_turtlebot_to_waypoint(turtlebot: Turtlebot, args, plot_route: bool):
     waypointStr = args[2]
     waypointIndex = int(waypointStr[len("waypoint"):])
     waypoint = WAYPOINTS[waypointIndex]
 
-    move_turtlebot_to_position(turtlebot, waypoint)
+    move_turtlebot_to_position(turtlebot, waypoint, plot_route)
 
 # 3) Program here your path-finding algorithm
 """ Hybrid A-star pathfinding --------------------------------------------------------------------
@@ -124,7 +126,10 @@ class TakePhoto:
         self.image = None
 
         # Connect image topic
-        img_topic = "/camera/rgb/image"
+        img_topic = "/camera/image"
+        if os.getenv("ENVIRONMENT") == ProgramEnvironment.simulation.value:
+            img_topic = "/camera/rbg/image_raw"
+
         self.image_sub = rospy.Subscriber(img_topic, Image, self.callback)
 
         # Wait for first image with timeout (up to 5 seconds)
@@ -324,6 +329,13 @@ def charge_battery_waypoint0():
 """ Main code ---------------------------------------------------------------------------
 """
 if __name__ == '__main__':
+    p = argparse.ArgumentParser()
+    p.add_argument('-env', type=ProgramEnvironment, choices=list(ProgramEnvironment), default=ProgramEnvironment.simulation, help="Simulation or real")  #A* heuristic
+    p.add_argument('-p', action='store_true', help='Plot the planned paths')
+    args = p.parse_args()
+
+    os.environ["ENVIRONMENT"] = f"{args.env}"
+
     try:
         print()
         print("************ TTK4192 - Assigment 4 **************************")
@@ -345,7 +357,7 @@ if __name__ == '__main__':
         # aea 3
         # aea 4
         
-	# 5.1) Make a plan using temporal planner
+	    # 5.1) Make a plan using temporal planner
         # 5.2) Reading the plan 
         plan_general = calculate_plan(cache=True)
 
@@ -357,7 +369,7 @@ if __name__ == '__main__':
         for step in plan_general:
             if step['action'] == 'move':
                 print("Move turlebot", step['args'])
-                move_turtlebot_to_waypoint(turtlebot, step['args'])
+                move_turtlebot_to_waypoint(turtlebot, step['args'], args.p)
             elif step['action'] == 'take_picture':
                 waypoint_name = step['args'][1] if len(step['args']) > 1 else 'unknown'
                 img_title = f"{waypoint_name}.jpg"
@@ -369,7 +381,7 @@ if __name__ == '__main__':
                     rospy.loginfo("No image received at " + waypoint_name)
             elif step['action'] == 'manipulate_valve':
                 print("Manipulate valve")
-                Manipulate_OpenManipulator_x()
+                #Manipulate_OpenManipulator_x()
 
         exit(0)
 

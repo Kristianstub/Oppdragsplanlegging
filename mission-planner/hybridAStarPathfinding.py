@@ -15,6 +15,8 @@ from utils.environment import Environment
 from utils.dubins_path import DubinsPath
 from utils.astar import Astar
 from utils.utils import plot_a_car, get_discretized_thetas, round_theta, same_point
+from environment import REAL_OBSTRACLES, SIMULATION_OBSTRACLES, ProgramEnvironment
+import os
 
 
 """ ---------------------------------------------------------------
@@ -473,23 +475,10 @@ class map_grid:
 
         # self.start_pos2 = [0, 0, 0]  # default values
         # self.end_pos2 = [4, 8, -pi]  # default
-        self.obs = [
-            [1.2,  1.45, 0.2,  0.4], # Obstacle Left Island
-            [2.5,  1.45, 0.4,  0.4], # Obstacle Right Island
-            [1.55, 0.7,  0.5,  0.2], # Valve 0
-            [3.16, 0.7,  0.5,  0.2], # Valve 1
-            [3.56, 1.75, 0.5,  0.2], # Pump 1
-            [3.3,  0.0,  1.91, 0.2], # Wall reduction Large
-            # [0,    1,    0.5,  0.2], # Wall reduction Small, on left side
-            # [0, 6, 6, 0.1],
-            # [6, 0, 0.1, 4],
-            # [0, 14, 4, 0.1],
-            # [6, 14, 0.1, 6],
-            # [14, 14, 6, 0.1],
-            # [14, 16, 0.1, 4],
-            # [16, 6, 4, 0.1],
-            # [14, 0, 0.1, 6],
-        ]
+        if os.getenv("ENVIRONMENT") == ProgramEnvironment.real.value:
+            self.obs = REAL_OBSTRACLES
+        else:
+            self.obs = SIMULATION_OBSTRACLES
 
 if __name__ == '__main__':
     print("Executing hybrid A* algorithm")
