@@ -10,7 +10,15 @@ def vertex2Position(pos: List[float]) -> Position:
     return Position(pos[0], pos[1], pos[2])
 
 def calulateRoute(startingPosition: Position, targetWaypoint: Position, plot_route=False) -> List[Position]:
-    path, fig, ax = main_hybrid_a(1, startingPosition, targetWaypoint, False, False, True, animation=False)
+    path, fig, ax = main_hybrid_a(
+        1,
+        startingPosition,
+        targetWaypoint,
+        reverse=False,
+        extra=True,
+        grid_on=True,
+        animation=False
+    )
 
     if plot_route:
         plt.show(block=False)

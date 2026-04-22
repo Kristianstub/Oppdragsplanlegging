@@ -12,7 +12,7 @@ from os import system, name
 import time
 import re
 import matplotlib.animation as animation
-from datetime import datetime
+from datetime import datetime, timezone
 from matplotlib.collections import PatchCollection, LineCollection
 from matplotlib.patches import Rectangle
 from itertools import product
@@ -128,7 +128,7 @@ class TakePhoto:
         # Connect image topic
         img_topic = "/camera/image"
         if os.getenv("ENVIRONMENT") == ProgramEnvironment.simulation.value:
-            img_topic = "/camera/rbg/image_raw"
+            img_topic = "/camera/rgb/image_raw"
 
         self.image_sub = rospy.Subscriber(img_topic, Image, self.callback)
 
@@ -166,40 +166,6 @@ class TakePhoto:
             rospy.logwarn("No image available to save")
             return False
         
-def taking_photo_exe():
-    # Initialize
-    camera = TakePhoto()
-
-    # Default value is 'photo.jpg'
-    now = datetime.now()
-    dt_string = now.strftime("%d%m%Y_%H%M%S")
-    img_title = rospy.get_param('~image_title', 'photo'+dt_string+'.jpg')
-
-    # Retry taking picture if first attempt fails
-    max_retries = 3
-    retry_count = 0
-    while retry_count < max_retries:
-        if camera.take_picture(img_title):
-            rospy.loginfo("Saved image " + img_title)
-            break
-        else:
-            retry_count += 1
-            if retry_count < max_retries:
-                rospy.logwarn(f"Failed to capture image, retrying... ({retry_count}/{max_retries})")
-                rospy.sleep(1.0)
-            else:
-                rospy.logerr(f"No image received after {max_retries} attempts at waypoint5")
-    
-    # saving photo in a desired directory
-    file_source = '/home/miguel/catkin_ws/'
-    file_destination = '/home/miguel/catkin_ws/src/assigment4_ttk4192/scripts'
-    g='photo'+dt_string+'.jpg'
-
-    try:
-        shutil.move(file_source + g, file_destination)
-        rospy.sleep(1)
-    except Exception as e:
-        rospy.logwarn(f"Could not move image file: {e}")
 
 
 
@@ -332,6 +298,7 @@ if __name__ == '__main__':
     p = argparse.ArgumentParser()
     p.add_argument('-env', type=ProgramEnvironment, choices=list(ProgramEnvironment), default=ProgramEnvironment.simulation, help="Simulation or real")  #A* heuristic
     p.add_argument('-p', action='store_true', help='Plot the planned paths')
+    p.add_argument('-gripper', action='store_true', help='Gripper')
     args = p.parse_args()
 
     os.environ["ENVIRONMENT"] = f"{args.env}"
@@ -372,7 +339,7 @@ if __name__ == '__main__':
                 move_turtlebot_to_waypoint(turtlebot, step['args'], args.p)
             elif step['action'] == 'take_picture':
                 waypoint_name = step['args'][1] if len(step['args']) > 1 else 'unknown'
-                img_title = f"{waypoint_name}.jpg"
+                img_title = f"figures/{waypoint_name}-{datetime.now(timezone.utc).isoformat()}.jpg"
                 print(f"Take picture at {waypoint_name}")
                 camera = TakePhoto()
                 if camera.take_picture(img_title):
@@ -381,58 +348,8 @@ if __name__ == '__main__':
                     rospy.loginfo("No image received at " + waypoint_name)
             elif step['action'] == 'manipulate_valve':
                 print("Manipulate valve")
-                #Manipulate_OpenManipulator_x()
-
-        exit(0)
-
-        # convert string into functions and executing
-        print("")
-        print("Starting mission execution")
-        # Start simulations with battery = 100%
-        battery=100
-        task_finished=0
-        task_total=len(plan_general)
-        i_ini=0
-        while i_ini < task_total:
-            move_robot_waypoint0_waypoint1()
-            #taking_photo_exe()
-
-            plan_temp=plan_general[i_ini].split()
-            print(plan_temp)
-            if plan_temp[0]=="check_pump_picture_ir":
-                print("Inspect -pump")
-                time.sleep(1)
-
-            if plan_temp[0]=="check_seals_valve_picture_eo":
-                print("check-valve-EO")
-
-                time.sleep(1)
-
-            if plan_temp[0]=="move_robot":
-                print("move_robot_waypoints")
-
-                time.sleep(1)
-
-            if plan_temp[0]=="move_charge_robot":
-                print("")
-                print("Going to rechard robot")
-
-                time.sleep(1)
-
-            if plan_temp[0]=="charge_battery":
-                print(" ")
-                print("charging battery")
-
-                time.sleep(1)
-
-
-            i_ini=i_ini+1  # Next tasks
-
-
-        print("")
-        print("--------------------------------------")
-        print("All tasks were performed successfully")
-        time.sleep(10)  
+                if args.gripper:
+                    Manipulate_OpenManipulator_x()
 
     except rospy.ROSInterruptException:
         rospy.loginfo("Action terminated.")

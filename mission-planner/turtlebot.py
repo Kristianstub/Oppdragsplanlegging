@@ -9,7 +9,8 @@ from pointUtils import *
 from typing import List
 from control import *
 
-TURTLEBOT_START_POSITION = Point(0.2, 0.2, 0)
+#TURTLEBOT_START_POSITION = Point(0.2, 0.2, 0)
+TURTLEBOT_START_POSITION = Point(3.4, 1.2, -1.5707)
 LOOKAHEAD_DISTANCE = 0.20  # Reduced from 0.35 for tighter corner following
 MIN_LOOKAHEAD_DISTANCE = 0.12  # Reduced from 0.20 for better path adherence
 MAX_LOOKAHEAD_DISTANCE = 0.35  # Reduced from 0.55
