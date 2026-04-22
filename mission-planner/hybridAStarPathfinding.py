@@ -409,8 +409,25 @@ def main_hybrid_a(heu,start_pos, end_pos,reverse, extra, grid_on, show_plot=True
         edgecolor = ['k']*5 + ['r']
         facecolor = ['y'] + ['k']*4 + ['r']
 
+        # Smooth path with Chaikin corner-cutting
+        def chaikin(pts, iterations=4):
+            for _ in range(iterations):
+                p = np.array(pts)
+                q = 0.75 * p[:-1] + 0.25 * p[1:]
+                r = 0.25 * p[:-1] + 0.75 * p[1:]
+                pts = np.empty((len(q) + len(r), 2))
+                pts[0::2] = q
+                pts[1::2] = r
+                pts[0] = p[0]    # keep start fixed
+                pts[-1] = p[-1]  # keep end fixed
+            return pts
+
+        raw_pts = np.column_stack([xl, yl])
+        smooth_pts = chaikin(raw_pts, iterations=2)
+        xl_s, yl_s = smooth_pts[:, 0], smooth_pts[:, 1]
+
         # Draw only the final path — no search branches
-        ax.plot(xl, yl, color='lime', linewidth=2, zorder=3, label='Path')
+        ax.plot(xl_s, yl_s, color='lime', linewidth=2, zorder=3, label='Path')
 
         # Draw car outlines spaced along the path
         _carl.set_paths(carl[::max(1, len(carl)//10)])
