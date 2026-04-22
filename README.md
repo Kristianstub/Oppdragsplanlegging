@@ -67,15 +67,6 @@ roslaunch turtlebot3_bringup turtlebot3_robot.launch
 
 Compute a plan using the pddl files:
 
-Starting the gripper, in two seperate terminals on lab pc run: 
-```bash
-roslaunch turtlebot3_manipulation_moveit_config move_group.launch
-```
-
-```bash
-roslaunch turtlebot3_manipulation_bringup turtlebot3_manipulation_bringup.launch
-```
-
 ```bash
 cd catkin_ws/src
 source temporal-planning-main/bin/activate
@@ -124,6 +115,18 @@ cd ~/catkin_ws
 source devel/setup.bash
 rosrun assigment4_ttk4192 mission_planner_ttk4192.py
 ```
+
+
+
+Starting the gripper, in two seperate terminals on lab pc run: 
+```bash
+roslaunch turtlebot3_manipulation_moveit_config move_group.launch
+```
+
+```bash
+roslaunch turtlebot3_manipulation_bringup turtlebot3_manipulation_bringup.launch
+```
+
 
 
 
