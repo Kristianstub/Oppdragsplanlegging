@@ -96,9 +96,12 @@ def calculate_plan(cache=False):
 def move_turtlebot_to_position(turtlebot: Turtlebot, position: Position):
     print(f"Moving to {position}")
     turtlebotPosition = turtlebot.getPosition()
-    route = calulateRoute(turtlebotPosition, position, plot_route=True)
-    
-    turtlebot.follow_route(route)
+    pathSegments = calulateRoute(turtlebotPosition, position, plot_route=True)
+
+    for pathSegment in pathSegments:
+        if pathSegment.direction != 0:
+            reverse = pathSegment.direction == -1
+            turtlebot.follow_route(pathSegment.vertices, reverse=reverse)
 
 def move_turtlebot_to_waypoint(turtlebot: Turtlebot, args):
     waypointStr = args[2]
@@ -326,7 +329,7 @@ if __name__ == '__main__':
 
         turtlebot = Turtlebot()
 
-        # move_turtlebot_to_position(turtlebot, WAYPOINTS[2])
+        move_turtlebot_to_position(turtlebot, Position(3.1, 0.2, np.pi/2))
 
         # 5.3) Start mission execution 
         for step in plan_general:

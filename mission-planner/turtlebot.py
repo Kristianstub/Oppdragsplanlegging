@@ -62,7 +62,9 @@ class Turtlebot():
 
         self.stop()
 
-    def move_to_point(self, targetPoint: Point):
+    def move_to_point(self, targetPoint: Point, speed: float = None):
+        if speed is None:
+            speed = self.speed
         position_error = point_subtract(targetPoint, self.position)
 
         # First turn to the righ direction
@@ -84,28 +86,31 @@ class Turtlebot():
                 break
 
             angular = yaw_pid_moving.update(self.yaw)
-            self.set_velocity(self.speed, angular)
+            if speed < 0:
+                angular *= -1
+            self.set_velocity(speed, angular)
             self.rate.sleep()
 
         self.stop()
 
-    def move_to_position(self, position: Position):
-        self.move_to_point(position.getPoint())
+    def move_to_position(self, position: Position, speed: float = None):
+        self.move_to_point(position.getPoint(), speed=speed)
         self.turn_around(position.getYaw())
     
-    def follow_route(self, route: List[Position]):
+    def follow_route(self, route: List[Position], reverse=False):
 
         self.turn_around(route[1].getYaw())
 
         path = [vertex.getPoint() for vertex in route]
 
+        speed = -self.speed if reverse else self.speed
 
         print("Using pure pursuit")
         while not rospy.is_shutdown():
             lookahead_point = find_lookahead_point(path, self.position, LOOKAHEAD_DISTANCE)
             if lookahead_point is None:
                 break
-            targetTwist = pure_pursuit(self.getPosition(), lookahead_point, LOOKAHEAD_DISTANCE, self.speed)
+            targetTwist = pure_pursuit(self.getPosition(), lookahead_point, LOOKAHEAD_DISTANCE, speed)
             self.set_twist(targetTwist)
             self.rate.sleep()
         
@@ -118,7 +123,7 @@ class Turtlebot():
         #         break
 
         print("Moving to the last Position")
-        self.move_to_position(route[-1])
+        self.move_to_position(route[-1], speed)
 
     def stop(self):
         self.velocity = Twist()

@@ -7,12 +7,16 @@ from math import pi, tan, sqrt
 import matplotlib.pyplot as plt
 from matplotlib.collections import PatchCollection, LineCollection
 from matplotlib.patches import Rectangle
+from matplotlib.figure import Figure
+from matplotlib.axes import Axes
 from itertools import product
 import argparse
 from utils.grid import Grid
 from utils.car import SimpleCar
+from utils import car
 from utils.environment import Environment
 from utils.dubins_path import DubinsPath
+from typing import List, Tuple
 from utils.astar import Astar
 from utils.utils import plot_a_car, get_discretized_thetas, round_theta, same_point
 
@@ -27,7 +31,7 @@ from utils.utils import plot_a_car, get_discretized_thetas, round_theta, same_po
 
 class HybridAstar:
     """ Hybrid A* search procedure. """
-    def __init__(self, car, grid, reverse, unit_theta=pi/12, dt=1e-2, check_dubins=1):
+    def __init__(self, car: SimpleCar, grid, reverse, unit_theta=pi/12, dt=1e-2, check_dubins=1):
         self.car = car
         self.grid = grid
         self.reverse = reverse
@@ -266,7 +270,7 @@ class HybridAstar:
         return None, None
 
 
-def main_hybrid_a(heu, start_pos, end_pos, reverse: bool, extra, grid_on: bool, animation=True, obstacle_safe_distance=0.1):
+def main_hybrid_a(heu, start_pos, end_pos, reverse: bool, extra, grid_on: bool, animation=True, obstacle_safe_distance=0.1) -> Tuple[List[car.State], Figure, Axes]:
 
 
     tc = map_grid()

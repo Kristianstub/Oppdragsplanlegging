@@ -8,7 +8,7 @@ class Environment:
     #def __init__(self, obs=None, lx=10, ly=10):  % Aqui es creo, pero atento bro!
     def __init__(self, obs=None, lx=20, ly=20, obstacle_safe_distance=0.1):
 
-
+        self.safe_distance = obstacle_safe_distance
         self.lx  = float(lx)
         self.ly  = float(ly)
 
@@ -17,8 +17,10 @@ class Environment:
         else:
             self.obs = []
     
-    def rectangle_inbounds(self, rect, safe_dis=0.05):
+    def rectangle_inbounds(self, rect, safe_dis=None):
         """ Check rectangle target within the map bounds. """
+        if safe_dis is None:
+            safe_dis = self.safe_distance
 
         for v in rect:
             if v[0] < safe_dis:
@@ -32,8 +34,10 @@ class Environment:
         
         return True
     
-    def ringsector_inbounds(self, rs, safe_dis=0.05):
+    def ringsector_inbounds(self, rs, safe_dis=None):
         """ Check ringsector target within the map bounds. """
+        if safe_dis is None:
+            safe_dis = self.safe_distance
 
         rect = [[0+safe_dis,        0+safe_dis],
                 [self.lx-safe_dis,  0+safe_dis],
