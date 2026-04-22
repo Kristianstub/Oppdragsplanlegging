@@ -10,6 +10,9 @@ from typing import List
 from control import *
 
 TURTLEBOT_START_POSITION = Point(0.2, 0.2, 0)
+LOOKAHEAD_DISTANCE = 0.3
+ANGLE_TARGET_THRESHOLD = 0.05
+POSITION_TARGET_THRESHOLD = 0.05
 
 class Turtlebot():
     """
@@ -34,10 +37,6 @@ class Turtlebot():
         self.rate = rospy.Rate(10) # How often the controller loop is running [Hz]
 
         self.speed = 0.2
-
-        # Limits for goals
-        self.ANGLE_TARGET_THRESHOLD = 0.1
-        self.POSITION_TARGET_THRESHOLD = 0.2
     
     def set_velocity(self, linear: float, angular: float):
         self.velocity.linear.x = linear
@@ -56,7 +55,7 @@ class Turtlebot():
 
         while not rospy.is_shutdown():
             angular = yaw_pid_turn_on_point.update(self.yaw)
-            if abs(angular) < self.ANGLE_TARGET_THRESHOLD:
+            if abs(angular) < ANGLE_TARGET_THRESHOLD:
                 break
             self.set_velocity(0, angular)
             self.rate.sleep()
@@ -81,7 +80,7 @@ class Turtlebot():
             position_error = point_subtract(self.position, targetPoint)
             position_error_vector = point2vector2D(position_error)
             distance_left = np.linalg.norm(position_error_vector)
-            if distance_left < self.POSITION_TARGET_THRESHOLD:
+            if distance_left < POSITION_TARGET_THRESHOLD:
                 break
 
             angular = yaw_pid_moving.update(self.yaw)
@@ -98,7 +97,6 @@ class Turtlebot():
 
         path = [vertex.getPoint() for vertex in route]
 
-        LOOKAHEAD_DISTANCE = 0.8
 
         print("Using pure pursuit")
         while not rospy.is_shutdown():

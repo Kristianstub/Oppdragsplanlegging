@@ -38,6 +38,8 @@ def find_lookahead_point(path: List[Point], robot: Point, lookahead_distance: fl
         if disc < 0:
             continue
 
+        if abs(a) < 1e-9:
+            continue
         t = (-b + disc**0.5) / (2*a)  # take the larger t (forward along segment)
         if 0 <= t <= 1:
             return Point(p1.x + t*dx, p1.y + t*dy, 0)
