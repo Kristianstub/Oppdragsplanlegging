@@ -32,7 +32,7 @@ def split_path_by_direction(path: List[car.State]) -> List[PathSegment]:
             segments.append(current_segment)
             current_dir = newVertex.direction
             current_segment = PathSegment(newVertex.direction)
-        
+
         current_segment.vertices.append(vertex2Position(newVertex.pos))
 
     segments.append(current_segment)
@@ -44,7 +44,7 @@ def calulateRoute(startingPosition: Position, targetWaypoint: Position, plot_rou
         1,
         startingPosition,
         targetWaypoint,
-        reverse=True,
+        reverse=False,
         extra=False,
         grid_on=True,
         animation=False,

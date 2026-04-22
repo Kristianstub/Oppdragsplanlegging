@@ -282,7 +282,7 @@ def main_hybrid_a(heu, start_pos, end_pos, reverse: bool, extra, grid_on: bool, 
         raise Exception("Start position is inside an obstacle!")
 
     if not car.is_pos_safe(end_pos):
-        raise Exception("End position is inside an obstacle!")
+        raise Exception("End position is inside an obstacle! End position: {}".format(end_pos))
 
     hastar = HybridAstar(car, grid, reverse)
 
