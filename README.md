@@ -42,7 +42,7 @@ To visualize the simulation, use the folliwing command
 Run this on a pc on same network as turtlebot
 ```bash
 export ROS_IP=192.168.50.84
-export ROS_MASTER_URI=192.168.50.84:11311
+export ROS_MASTER_URI=http://192.168.50.84:11311
 roscore
 
 ```
