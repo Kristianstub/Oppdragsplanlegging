@@ -54,9 +54,9 @@ class HybridAstar:
         
         self.w1 = 0.95 # weight for astar heuristic
         self.w2 = 0.05 # weight for simple heuristic
-        self.w3 = 0.30 # weight for extra cost of steering angle change
-        self.w4 = 0.10 # weight for extra cost of turning
-        self.w5 = 2.00 # weight for extra cost of reversing
+        self.w3 = 0.20 # weight for extra cost of steering angle change
+        self.w4 = 0.50 # weight for extra cost of turning
+        self.w5 = 4.00 # weight for extra cost of reversing
 
         self.thetas = get_discretized_thetas(self.unit_theta)
     
@@ -129,14 +129,10 @@ class HybridAstar:
             child.g_ = node.g_ + self.arc
 
             if extra:
-                # extra cost for changing steering angle
-                if phi != node.phi:
-                    child.g += self.w3 * self.arc
-                
                 # extra cost for turning
                 if phi != 0:
                     child.g += self.w4 * self.arc
-                
+
                 # extra cost for reverse
                 if m == -1:
                     child.g += self.w5 * self.arc
@@ -146,6 +142,30 @@ class HybridAstar:
             if heu == 1:
                 child.f = child.g + self.astar_heuristic(child.pos)
             
+            children.append([child, branch])
+
+        # Spin-in-place actions (differential-drive capability)
+        for dtheta in [-self.unit_theta, self.unit_theta]:
+            new_pos = [node.pos[0], node.pos[1], node.pos[2] + dtheta]
+
+            if not self.car.is_pos_safe(new_pos):
+                continue
+
+            child = self.construct_node(new_pos)
+            child.phi = 0
+            child.m = 0
+            child.parent = node
+
+            spin_cost = self.r * abs(dtheta)
+            child.g = node.g + spin_cost
+            child.g_ = node.g_ + spin_cost
+
+            if heu == 0:
+                child.f = child.g + self.simple_heuristic(child.pos)
+            if heu == 1:
+                child.f = child.g + self.astar_heuristic(child.pos)
+
+            branch = [0, node.pos[:2]]  # stationary — no visual branch
             children.append([child, branch])
 
         return children
@@ -160,7 +180,7 @@ class HybridAstar:
             solutions_ = self.dubins.find_tangents(best_.pos, self.goal)
             d_route_, cost_, valid_ = self.dubins.best_tangent(solutions_)
         
-            if valid_ and cost_ + best_.g_ < cost + best.g_:
+            if valid_ and cost_ + best_.g < cost + best.g:
                 best = best_
                 cost = cost_
                 d_route = d_route_
@@ -421,6 +441,7 @@ class Node:
         self.phi = 0
         self.m = None
         self.branches = []
+        self.turn_accum = 0.0
 
     def __eq__(self, other):
 
