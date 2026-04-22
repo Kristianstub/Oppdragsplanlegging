@@ -10,15 +10,25 @@ from typing import List
 from control import *
 
 TURTLEBOT_START_POSITION = Point(0.2, 0.2, 0)
-LOOKAHEAD_DISTANCE = 0.35
-MIN_LOOKAHEAD_DISTANCE = 0.20
-MAX_LOOKAHEAD_DISTANCE = 0.55
+LOOKAHEAD_DISTANCE = 0.20  # Reduced from 0.35 for tighter corner following
+MIN_LOOKAHEAD_DISTANCE = 0.12  # Reduced from 0.20 for better path adherence
+MAX_LOOKAHEAD_DISTANCE = 0.35  # Reduced from 0.55
+
+# === Speed Control Parameters ===
 MAX_LINEAR_SPEED = 0.20
 MIN_LINEAR_SPEED = 0.07
 MAX_ANGULAR_SPEED = 1.00
+
+# === Enhanced Feedback Gains (very aggressive corner-cutting prevention) ===
+LATERAL_ERROR_P_GAIN = 2.0  # VERY AGGRESSIVE: strong lateral error correction (rad/s per meter)
+HEADING_ERROR_SPEED_FACTOR = 0.8  # VERY AGGRESSIVE: rapid slowdown if heading is wrong
+LATERAL_ERROR_SPEED_FACTOR = 1.5  # VERY AGGRESSIVE: strong slowdown when off-path
+DISTANCE_FEEDBACK_SPEED_FACTOR = 0.6  # AGGRESSIVE: early slowdown near waypoints
+PP_CLAMP_FACTOR = 0.4  # VERY AGGRESSIVE: 0.4 for sharp turns (was 0.7)
+CURVATURE_SPEED_FACTOR = 2.5  # VERY AGGRESSIVE: 2.5 for tight curves (was 1.2)
 # Keep positive for standard ROS yaw convention (+z = CCW).
 ANGULAR_COMMAND_SIGN = 1.0
-ALIGN_FINAL_HEADING = False
+ALIGN_FINAL_HEADING = True  # Enforce final waypoint heading alignment
 ANGLE_TARGET_THRESHOLD = 0.05
 POSITION_TARGET_THRESHOLD = 0.05
 
@@ -128,8 +138,11 @@ class Turtlebot():
         if not path:
             return
 
-
-        print("Using pure pursuit")
+        print("Using pure pursuit with aggressive closed-loop feedback and tighter waypoints")
+        
+        max_lateral_error = 0.0
+        min_speed_recorded = MAX_LINEAR_SPEED
+        
         while not rospy.is_shutdown():
             endpoint = path[-1]
             dist_to_goal = np.hypot(endpoint.x - self.position.x, endpoint.y - self.position.y)
@@ -142,6 +155,12 @@ class Turtlebot():
             segment_heading = np.arctan2(segment_end.y - segment_start.y, segment_end.x - segment_start.x)
             heading_error = np.arctan2(np.sin(segment_heading - self.yaw), np.cos(segment_heading - self.yaw))
 
+            # === Compute path-following errors ===
+            lateral_error = compute_lateral_error(path, self.position)
+            path_heading = compute_path_heading(path, self.position)
+            max_lateral_error = max(max_lateral_error, abs(lateral_error))
+
+            # === Dynamic lookahead (adaptive based on heading) ===
             dynamic_lookahead = adaptive_lookahead(
                 LOOKAHEAD_DISTANCE,
                 self.speed,
@@ -154,24 +173,42 @@ class Turtlebot():
             if lookahead_point is None:
                 lookahead_point = endpoint
 
-            targetTwist = pure_pursuit(self.getPosition(), lookahead_point, dynamic_lookahead, self.speed)
+            # === Enhanced Pure Pursuit with lateral error feedback ===
+            targetTwist = pure_pursuit_with_lateral_correction(
+                self.getPosition(),
+                lookahead_point,
+                dynamic_lookahead,
+                lateral_error,
+                LATERAL_ERROR_P_GAIN,
+                self.speed,
+                pp_clamp_factor=PP_CLAMP_FACTOR
+            )
+
+            # === Multi-factor adaptive speed ===
+            adaptive_speed = adaptive_speed_multi_factor(
+                self.speed,
+                heading_error,
+                lateral_error,
+                dist_to_goal,
+                heading_factor=HEADING_ERROR_SPEED_FACTOR,
+                lateral_factor=LATERAL_ERROR_SPEED_FACTOR,
+                distance_factor=DISTANCE_FEEDBACK_SPEED_FACTOR,
+                min_speed=MIN_LINEAR_SPEED
+            )
+            min_speed_recorded = min(min_speed_recorded, adaptive_speed)
+
+            # === Curvature-based speed scaling (backup mechanism) ===
             curvature_mag = abs(targetTwist.angular.z) / max(1e-3, self.speed)
-            speed_scale = 1.0 / (1.0 + 1.2 * curvature_mag)
-            commanded_speed = max(MIN_LINEAR_SPEED, self.speed * speed_scale)
+            speed_scale = 1.0 / (1.0 + CURVATURE_SPEED_FACTOR * curvature_mag)
+            commanded_speed = max(MIN_LINEAR_SPEED, adaptive_speed * speed_scale)
+            
             targetTwist.linear.x = min(targetTwist.linear.x, commanded_speed)
             targetTwist = clamp_twist(targetTwist, MAX_LINEAR_SPEED, MAX_ANGULAR_SPEED)
 
             self.set_twist(targetTwist)
             self.rate.sleep()
-        
-        # targetPoint = path[-1]
-        # while not rospy.is_shutdown():
-        #     position_error = point_subtract(self.position, targetPoint)
-        #     position_error_vector = point2vector2D(position_error)
-        #     distance_left = np.linalg.norm(position_error_vector)
-        #     if distance_left < self.POSITION_TARGET_THRESHOLD:
-        #         break
 
+        print(f"Route complete. Max lateral error: {max_lateral_error:.3f}m, Min speed: {min_speed_recorded:.3f}m/s")
         print("Moving to the last Position")
         self.stop()
         if ALIGN_FINAL_HEADING:

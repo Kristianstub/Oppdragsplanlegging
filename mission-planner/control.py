@@ -99,3 +99,106 @@ def adaptive_lookahead(base_lookahead: float, speed: float, heading_error: float
     heading_term = max(0.25, np.cos(heading_error))
     ld = (base_lookahead + speed_term) * heading_term
     return float(np.clip(ld, min_lookahead, max_lookahead))
+
+
+def compute_lateral_error(path: List[Point], robot: Point) -> float:
+    """
+    Compute signed lateral (cross-track) error: distance from robot to path segment,
+    positive if robot is left of path, negative if right.
+    """
+    if len(path) < 2:
+        return 0.0
+    
+    seg_idx = find_closest_segment(path, robot)
+    p1, p2 = path[seg_idx], path[seg_idx + 1]
+    
+    seg_dx = p2.x - p1.x
+    seg_dy = p2.y - p1.y
+    seg_len2 = seg_dx**2 + seg_dy**2
+    
+    if seg_len2 < 1e-9:
+        return 0.0
+    
+    rob_dx = robot.x - p1.x
+    rob_dy = robot.y - p1.y
+    
+    cross = seg_dx * rob_dy - seg_dy * rob_dx
+    seg_len = np.sqrt(seg_len2)
+    lateral_error = cross / seg_len
+    
+    return float(lateral_error)
+
+
+def compute_path_heading(path: List[Point], robot: Point) -> float:
+    """Compute heading (yaw) of path at closest segment."""
+    if len(path) < 2:
+        return 0.0
+    
+    seg_idx = find_closest_segment(path, robot)
+    seg_idx = min(seg_idx, len(path) - 2)
+    
+    p1, p2 = path[seg_idx], path[seg_idx + 1]
+    heading = np.arctan2(p2.y - p1.y, p2.x - p1.x)
+    return float(heading)
+
+
+def adaptive_speed_multi_factor(base_speed: float,
+                                 heading_error: float,
+                                 lateral_error: float,
+                                 distance_to_goal: float,
+                                 heading_factor: float = 0.5,
+                                 lateral_factor: float = 1.0,
+                                 distance_factor: float = 0.3,
+                                 min_speed: float = 0.05) -> float:
+    """
+    Compute adaptive speed with AGGRESSIVE feedback from heading, lateral error, and distance.
+    """
+    # Heading feedback: aggressive reduction if heading error is large
+    heading_scale = max(0.3, np.cos(heading_error))
+    speed_heading = base_speed * (1.0 - heading_factor * (1.0 - heading_scale))
+    
+    # Lateral error feedback: exponential penalty for path deviation
+    lateral_mag = abs(lateral_error)
+    lateral_scale = np.exp(-lateral_factor * lateral_mag)
+    speed_lateral = base_speed * lateral_scale
+    
+    # Distance feedback: aggressive slowdown within 0.5 m of goal
+    goal_slowdown_range = 0.5
+    if distance_to_goal < goal_slowdown_range:
+        distance_scale = distance_to_goal / goal_slowdown_range
+        speed_distance = base_speed * (1.0 - distance_factor * (1.0 - distance_scale))
+    else:
+        speed_distance = base_speed
+    
+    # Combine using geometric mean: all factors must be good
+    combined = (speed_heading * speed_lateral * speed_distance) ** (1.0 / 3.0)
+    adaptive_speed = min(combined, base_speed)
+    
+    return float(np.clip(adaptive_speed, min_speed, base_speed))
+
+
+def pure_pursuit_with_lateral_correction(robot_position: Position,
+                                          lookahead_point: Point,
+                                          lookahead_distance: float,
+                                          lateral_error: float,
+                                          lateral_p_gain: float,
+                                          speed: float,
+                                          pp_clamp_factor: float = 0.7) -> Twist:
+    """
+    Enhanced pure pursuit with explicit lateral error P-control feedback.
+    """
+    relative_point = to_reference_frame(robot_position, lookahead_point)
+    geometric_ld = np.hypot(relative_point.x, relative_point.y)
+    
+    ld = max(pp_clamp_factor * lookahead_distance, geometric_ld, 1e-3)
+    curvature = 2 * relative_point.y / (ld**2)
+    heading_error = np.arctan2(relative_point.y, relative_point.x)
+    
+    # Add lateral error feedback
+    lateral_correction = lateral_p_gain * lateral_error
+    
+    ret = Twist()
+    ret.linear.x = max(0.0, speed * np.cos(heading_error))
+    ret.angular.z = curvature * speed + lateral_correction
+    
+    return ret
