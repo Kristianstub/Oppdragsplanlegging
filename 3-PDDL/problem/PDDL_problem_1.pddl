@@ -20,8 +20,8 @@
     (= (duration_manipulate) 10)
     (= (duration_charge) 20)
 
-    ; robot starts at wp0 (Table 1, Case 1)
-    (at turtlebot0 waypoint0)
+    ; robot starts at wp2 (Table 1, Case 1)
+    (at turtlebot0 waypoint2)
 
     ; objects at waypoints (from figure)
     (at_obj charger0 waypoint0)
@@ -134,7 +134,7 @@
   )
 
   (:goal (and
-    (at turtlebot0 waypoint3)
+    (at turtlebot0 waypoint4)
     (valve_manipulated valve0)
     (valve_manipulated valve1)
     (picture_taken waypoint5)
