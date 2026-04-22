@@ -11,7 +11,7 @@ def main():
         end_pos = WAYPOINTS[i]
         fig, ax = main_hybrid_a(1, start_pos, end_pos, True, False, True, show_plot=False)
         fig.savefig(f"figures/WP{i - 1}-WP{i}.png")
-
+        fig.show()
 
 if __name__ == "__main__":
     main()
