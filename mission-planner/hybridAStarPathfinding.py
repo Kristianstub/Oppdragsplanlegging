@@ -386,8 +386,24 @@ def main_hybrid_a(heu,start_pos, end_pos,reverse, extra, grid_on, show_plot=True
         ani = animation.FuncAnimation(fig, animate, init_func=init, frames=frames, interval=1, repeat=True, blit=True)
         plt.show()
     else:
-        init()
-        animate(int(frames * 0.3))
+        edgecolor = ['k']*5 + ['r']
+        facecolor = ['y'] + ['k']*4 + ['r']
+
+        # Draw only the final path — no search branches
+        ax.plot(xl, yl, color='lime', linewidth=2, zorder=3, label='Path')
+
+        # Draw car outlines spaced along the path
+        _carl.set_paths(carl[::max(1, len(carl)//10)])
+        _carl.set_edgecolor('k')
+        _carl.set_facecolor('m')
+        _carl.set_alpha(0.2)
+        _carl.set_zorder(3)
+
+        # Draw the robot at the final position
+        _car.set_paths(path[-1].model)
+        _car.set_edgecolor(edgecolor)
+        _car.set_facecolor(facecolor)
+        _car.set_zorder(3)
 
     return fig, ax
 
