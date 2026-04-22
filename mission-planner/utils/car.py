@@ -10,15 +10,16 @@ from utils.cases import TestCase
 from utils.utils import transform, same_point
 
 from time import time
+from typing import List
 
 
 class State:
 
-    def __init__(self, pos, model):
+    def __init__(self, pos: List[float], model, direction: int):
 
         self.pos = pos
         self.model = model
-
+        self.direction = direction
 
 class SimpleCar:
     """ Car model and functions. """
@@ -88,7 +89,7 @@ class SimpleCar:
 
         return vertex
     
-    def get_car_state(self, pos, phi=0):
+    def get_car_state(self, pos, phi=0, m=0):
         """ Get the car state according to the pos and steering angle. """
         
         x, y, theta = pos
@@ -114,7 +115,7 @@ class SimpleCar:
             Arrow(x, y, 1.1*self.carl*cos(theta), 1.1*self.carl*sin(theta), width=0.1, color='r')
         ]
 
-        state = State(pos, model)
+        state = State(pos, model, m)
 
         return state
     
@@ -174,12 +175,12 @@ class SimpleCar:
                 n_steps = max(1, round(abs(dtheta) / (pi/36)))
                 for k in range(n_steps):
                     interp_theta = pos[2] + dtheta * k / n_steps
-                    path.append(self.get_car_state([pos[0], pos[1], interp_theta], 0))
+                    path.append(self.get_car_state([pos[0], pos[1], interp_theta], 0, m))
                 pos = goal
                 continue
 
             while True:
-                car_state = self.get_car_state(pos, phi)
+                car_state = self.get_car_state(pos, phi, m)
                 path.append(car_state)
 
                 pos = self.step(pos, phi, m)
@@ -200,7 +201,7 @@ class SimpleCar:
 
         for phi, m, steps in controls:
             for _ in range(steps):
-                car_state = self.get_car_state(pos, phi)
+                car_state = self.get_car_state(pos, phi, m)
                 path.append(car_state)
                 pos = self.step(pos, phi, m)
         

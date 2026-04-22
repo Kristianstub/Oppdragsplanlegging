@@ -25,7 +25,7 @@ class PID:
         error = self.reference - current_value
 
         if self.use_ssa:
-            error = smallest_signed_angle(error)
+            error = smallest_signed_angle(self.reference, current_value)
         
         self.accumulated_error = max(-self.integrator_max, min(self.integrator_max, self.accumulated_error + error * self.time_step))
 
