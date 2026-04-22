@@ -39,19 +39,21 @@ To visualize the simulation, use the folliwing command
 ```
 ## Setting ROS master 
 
-```bash
 Run this on a pc on same network as turtlebot
+```bash
 export ROS_IP=192.168.50.84
 export ROS_MASTER_URI=192.168.50.84:11311
 
 ```
+
+Ssh into turtlebot with: 
 ```bash
-First ssh into turtlebot with: 
 ssh ubuntu@192.168.50.239
 # password: turtlebot
+```
 
-then run:
-
+Then run this with in the ssh session.
+```bash
 export ROS_MASTER_URI=http://192.168.50.84:11311
 export ROS_IP=192.168.50.239
 export TURTLEBOT3_MODEL=waffle_pi
