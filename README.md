@@ -77,13 +77,13 @@ Make sure UV is installed, see `install.sh`.
 Set up the venv to get all the packages needed. First download the dependencides
 
 ```bash
-cd 8-GNC
+cd mission-planner
 uv sync
 ```
 
 Then activate the venv.
 ```bash
-source .venv/bin/active
+source .venv/bin/activate
 ```
 
 To test if the mission planner works run these commands:
