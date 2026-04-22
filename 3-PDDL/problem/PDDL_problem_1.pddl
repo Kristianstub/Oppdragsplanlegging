@@ -20,7 +20,7 @@
     (= (duration_manipulate) 10)
     (= (duration_charge) 20)
 
-    ; robot starts at wp2 (Table 1, Case 1)
+    ; robot start position
     (at turtlebot0 waypoint0)
 
     ; objects at waypoints (from figure)
@@ -137,8 +137,8 @@
     (at turtlebot0 waypoint4)
     (valve_manipulated valve0)
     (valve_manipulated valve1)
-    (picture_taken waypoint5)
-    (picture_taken waypoint6)
+    (picture_taken pump0)
+    (picture_taken pump1)
   ))
 
   (:metric minimize (total-time))

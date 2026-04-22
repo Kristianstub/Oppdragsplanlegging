@@ -17,7 +17,7 @@
         (at_obj ?o - object ?wp - waypoint)
         (charged ?v - vehicle)
         (valve_manipulated ?val - valve)
-        (picture_taken ?wp - waypoint)
+        (picture_taken ?p - pump)
         (connects ?r - route ?wp1 - waypoint ?wp2 - waypoint)
     )
 
@@ -43,13 +43,14 @@
     )
 
     (:durative-action take_picture
-        :parameters (?v - turtlebot ?wp - waypoint)
+        :parameters (?v - turtlebot ?wp - waypoint ?p - pump)
         :duration (= ?duration (duration_picture))
         :condition (and
             (over all (at ?v ?wp))
+            (at start (at_obj ?p ?wp))
         )
         :effect (and
-            (at end (picture_taken ?wp))
+            (at end (picture_taken ?p))
         )
     )
 
