@@ -1,109 +1,109 @@
 import rospy
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, Point
 from nav_msgs.msg import Odometry
+import numpy as np
+import tf
+from pid import PID
+from waypoints import Waypoint
+
+def point_subtract(lhs: Point, rhs: Point) -> Point:
+    return Point(
+        lhs.x - rhs.x,
+        lhs.y - rhs.y,
+        lhs.z - rhs.z
+    )
+
+def point2vector2D(point: Point) -> np.ndarray:
+    return np.array([point.x, point.y])
 
 class Turtlebot():
     """
-    Path-following module
+    Turtlebot class, to move the turtlebot
     """
-    def __init__(self, points):
+
+    position: Point
+    yaw: float
+    velocity: Twist
+
+    def __init__(self):
         rospy.init_node('turtlebot_move', anonymous=False)
-        rospy.loginfo("Press CTRL + C to terminate")
+        rospy.loginfo("Turtlebot controller initiated.")
         rospy.on_shutdown(self.stop)
 
-        self.x = 0.0
-        self.y = 0.0
-        self.theta = 0.0
+        self.position = Point(0, 0, 0)
+        self.yaw = 0.0
+        self.velocity = Twist()
         self.odom_sub = rospy.Subscriber("odom", Odometry, self.odom_callback) # subscribing to the odometer
         self.vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)        # reading vehicle speed
-        self.vel = Twist()
 
-        # track a sequence of waypoints
-        for point in points:
-            self.move_to_point(point[0], point[1])
-            rospy.sleep(1)
-        self.stop()
-        rospy.logwarn("Action done.")
+        self.rate = rospy.Rate(10) # How often the controller loop is running [Hz]
 
-        # plot trajectory
-        data = np.array(self.trajectory)
-        np.savetxt('trajectory.csv', data, fmt='%f', delimiter=',')
-        plt.plot(data[:,0],data[:,1])
-        plt.show()
+        self.speed = 0.2
 
+        # Limits for goals
+        self.ANGLE_TARGET_THRESHOLD = 0.1
+        self.POSITION_TARGET_THRESHOLD = 0.2
+    
+    def set_velocity(self, linear: float, angular: float):
+        self.velocity.linear.x = linear
+        self.velocity.angular.z = angular
+        self.vel_pub.publish(self.velocity)
+    
+    def turn_around(self, targetYaw: float):
+        yaw_pid_turn_on_point = PID(1, 0, 0)
+        yaw_pid_turn_on_point.setReference(targetYaw)
 
-    def move_to_point(self, x, y):
-        # Here must be improved the path-following ---
-        # Compute orientation for angular vel and direction vector for linear velocity
+        print("TURN AROUND")
 
-        diff_x = x - self.x
-        diff_y = y - self.y
-        direction_vector = np.array([diff_x, diff_y])
-        direction_vector = direction_vector/sqrt(diff_x*diff_x + diff_y*diff_y)  # normalization
-        theta = atan2(diff_y, diff_x)
-
-        # We should adopt different parameters for different kinds of movement
-        self.pid_theta.setPID(1, 0, 0)     # P control while steering
-        self.pid_theta.setPoint(theta)
-        rospy.logwarn("### PID: set target theta = " + str(theta) + " ###")
-
-        
-        # Adjust orientation first
         while not rospy.is_shutdown():
-            angular = self.pid_theta.update(self.theta)
-            if abs(angular) > 0.2:
-                angular = angular/abs(angular)*0.2
-            if abs(angular) < 0.01:
+            angular = yaw_pid_turn_on_point.update(self.yaw)
+            if abs(angular) < self.ANGLE_TARGET_THRESHOLD:
                 break
-            self.vel.linear.x = 0
-            self.vel.angular.z = angular
-            self.vel_pub.publish(self.vel)
+            self.set_velocity(0, angular)
             self.rate.sleep()
 
-        # Have a rest
         self.stop()
-        self.pid_theta.setPoint(theta)
-        self.pid_theta.setPID(1, 0.02, 0.2)  # PID control while moving
+
+    def move_to_point(self, targetPoint: Point):
+        position_error = point_subtract(targetPoint, self.position)
+
+        # First turn to the righ direction
+        target_yaw = np.arctan2(position_error.y, position_error.x)
+        self.turn_around(target_yaw)
+
+        print("MOVING LINEAR")
+
+        # Second, drive to the target position.
+        yaw_pid_moving = PID(1, 0.02, 0.2)
+        yaw_pid_moving.setReference(target_yaw)
 
         # Move to the target point
         while not rospy.is_shutdown():
-            diff_x = x - self.x
-            diff_y = y - self.y
-            vector = np.array([diff_x, diff_y])
-            linear = np.dot(vector, direction_vector) # projection
-            if abs(linear) > 0.2:
-                linear = linear/abs(linear)*0.2
-
-            angular = self.pid_theta.update(self.theta)
-            if abs(angular) > 0.2:
-                angular = angular/abs(angular)*0.2
-
-            if abs(linear) < 0.01 and abs(angular) < 0.01:
+            position_error = point_subtract(self.position, targetPoint)
+            position_error_vector = point2vector2D(position_error)
+            distance_left = np.linalg.norm(position_error_vector)
+            if distance_left < self.POSITION_TARGET_THRESHOLD:
                 break
-            self.vel.linear.x = 1.5*linear   # Here can adjust speed
-            self.vel.angular.z = angular
-            self.vel_pub.publish(self.vel)
+
+            angular = yaw_pid_moving.update(self.yaw)
+            self.set_velocity(self.speed, angular)
             self.rate.sleep()
+
         self.stop()
 
-    def stop(self):
-        self.vel.linear.x = 0
-        self.vel.angular.z = 0
-        self.vel_pub.publish(self.vel)
+    def move_to_waypoint(self, waypoint: Waypoint):
+        self.move_to_point(waypoint.getPoint())
+        self.turn_around(waypoint.getYaw())
 
-    def odom_callback(self, msg):
-        # Get (x, y, theta) specification from odometry topic
+    def stop(self):
+        self.velocity = Twist()
+        self.vel_pub.publish(self.velocity)
+        rospy.sleep(1)
+
+    def odom_callback(self, msg: Odometry):
+        # Get (x, y, yaw) specification from odometry topic
         quarternion = [msg.pose.pose.orientation.x,msg.pose.pose.orientation.y,\
                     msg.pose.pose.orientation.z, msg.pose.pose.orientation.w]
         (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(quarternion)
-        self.theta = yaw
-        self.x = msg.pose.pose.position.x
-        self.y = msg.pose.pose.position.y
-
-        # Make messages saved and prompted in 5Hz rather than 100Hz
-        self.counter += 1
-        if self.counter == 20:
-            self.counter = 0
-            self.trajectory.append([self.x,self.y])
-            #rospy.loginfo("odom: x=" + str(self.x) + ";  y=" + str(self.y) + ";  theta=" + str(self.theta))
-
+        self.yaw = yaw
+        self.position = msg.pose.pose.position
