@@ -10,7 +10,7 @@ from typing import List
 from control import *
 
 TURTLEBOT_START_POSITION = Point(0.2, 0.2, 0)
-LOOKAHEAD_DISTANCE = 0.3
+LOOKAHEAD_DISTANCE = 0.5
 ANGLE_TARGET_THRESHOLD = 0.05
 POSITION_TARGET_THRESHOLD = 0.05
 
@@ -36,7 +36,7 @@ class Turtlebot():
 
         self.rate = rospy.Rate(10) # How often the controller loop is running [Hz]
 
-        self.speed = 0.2
+        self.speed = 0.15
     
     def set_velocity(self, linear: float, angular: float):
         self.velocity.linear.x = linear
@@ -94,6 +94,8 @@ class Turtlebot():
         self.turn_around(position.getYaw())
     
     def follow_route(self, route: List[Position]):
+
+        self.turn_around(route[1].getYaw())
 
         path = [vertex.getPoint() for vertex in route]
 

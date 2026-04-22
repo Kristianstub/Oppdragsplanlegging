@@ -1,36 +1,38 @@
 #!/usr/bin/env python3
-import rospy
-import os
-import tf
-import numpy as np
-import matplotlib.pyplot as plt
-from geometry_msgs.msg import Twist
-from nav_msgs.msg import Odometry
-from math import pi, sqrt, atan2, tan
-from os import system, name
-import time
-import re
-import matplotlib.animation as animation
+from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
+from cv_bridge import CvBridge, CvBridgeError
 from datetime import datetime
+from geometry_msgs.msg import Twist
+from guidance import calulateRoute
+from hybridAStarPathfinding import main_hybrid_a
+from itertools import product
+from math import pi, sqrt, atan2, tan
 from matplotlib.collections import PatchCollection, LineCollection
 from matplotlib.patches import Rectangle
-from itertools import product
+from nav_msgs.msg import Odometry
+from os import system, name
+from pathlib import Path
+from position import Position
+from sensor_msgs.msg import Image
+from std_msgs.msg import String
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+from turtlebot import Turtlebot
 from utils.astar import Astar
 from utils.utils import plot_a_car, get_discretized_thetas, round_theta, same_point
-import cv2
-from std_msgs.msg import String
-from sensor_msgs.msg import Image
-from cv_bridge import CvBridge, CvBridgeError
-import shutil
-import copy
-# Import here the packages used in your codes
-from hybridAStarPathfinding import main_hybrid_a
 from waypoints import WAYPOINTS
-from position import Position
+import actionlib
+import copy
+import cv2
+import matplotlib.animation as animation
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+import re
+import rospy
+import shutil
 import subprocess
-from pathlib import Path
-from turtlebot import Turtlebot
-from guidance import calulateRoute
+import tf
+import time
 
 """ ----------------------------------------------------------------------------------
 Mission planner for Autonomos robots: TTK4192,NTNU. 
@@ -161,10 +163,10 @@ def taking_photo_exe():
         rospy.loginfo("Saved image " + img_title)
     else:
         rospy.loginfo("No images received")
-	#eog photo.jpg
+    #eog photo.jpg
     # Sleep to give the last log messages time to be sent
 
-	# saving photo in a desired directory
+    # saving photo in a desired directory
     file_source = '/home/miguel/catkin_ws/'
     file_destination = '/home/miguel/catkin_ws/src/assigment4_ttk4192/scripts'
     g='photo'+dt_string+'.jpg'
@@ -177,9 +179,6 @@ def taking_photo_exe():
 def Manipulate_OpenManipulator_x():
     print("Executing manipulate valve with OpenManipulator-X")
 
-    import actionlib
-    from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
-    from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
     arm_client     = actionlib.SimpleActionClient('/arm_controller/follow_joint_trajectory',     FollowJointTrajectoryAction)
     gripper_client = actionlib.SimpleActionClient('/gripper_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
@@ -321,7 +320,7 @@ if __name__ == '__main__':
         # aea 3
         # aea 4
         
-	# 5.1) Make a plan using temporal planner
+    # 5.1) Make a plan using temporal planner
         # 5.2) Reading the plan 
         plan_general = calculate_plan(cache=True)
 
@@ -345,7 +344,7 @@ if __name__ == '__main__':
                     rospy.loginfo("No image received at " + waypoint_name)
             elif step['action'] == 'manipulate_valve':
                 print("Manipulate valve")
-                Manipulate_OpenManipulator_x()
+                #Manipulate_OpenManipulator_x()
 
         exit(0)
 

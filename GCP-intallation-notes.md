@@ -75,6 +75,8 @@ git clone -b noetic-devel https://github.com/ROBOTIS-GIT/DynamixelSDK.git
 git clone -b noetic https://github.com/ROBOTIS-GIT/turtlebot3_msgs.git
 git clone -b noetic https://github.com/ROBOTIS-GIT/turtlebot3.git
 git clone -b noetic https://github.com/ROBOTIS-GIT/turtlebot3_simulations.git
+git clone -b noetic https://github.com/ROBOTIS-GIT/turtlebot3_manipulation.git
+git clone -b noetic https://github.com/ROBOTIS-GIT/turtlebot3_manipulation_simulations.git
 cd ~/catkin_ws && catkin_make
 echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
 ```

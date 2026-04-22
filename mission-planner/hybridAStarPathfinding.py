@@ -266,11 +266,11 @@ class HybridAstar:
         return None, None
 
 
-def main_hybrid_a(heu,start_pos, end_pos,reverse, extra, grid_on, animation=True):
+def main_hybrid_a(heu, start_pos, end_pos, reverse: bool, extra, grid_on: bool, animation=True, obstacle_safe_distance=0.1):
 
 
     tc = map_grid()
-    env = Environment(tc.obs, lx=5.21, ly=2.75)
+    env = Environment(tc.obs, lx=5.21, ly=2.75, obstacle_safe_distance=obstacle_safe_distance)
     car = SimpleCar(env, start_pos, end_pos, l=0.05, max_phi=pi/5)
     grid = Grid(env, cell_size=0.10)
 

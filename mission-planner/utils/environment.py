@@ -6,14 +6,14 @@ class Environment:
     """ The map configuration. """
 
     #def __init__(self, obs=None, lx=10, ly=10):  % Aqui es creo, pero atento bro!
-    def __init__(self, obs=None, lx=20, ly=20):
+    def __init__(self, obs=None, lx=20, ly=20, obstacle_safe_distance=0.1):
 
 
         self.lx  = float(lx)
         self.ly  = float(ly)
 
         if obs:
-            self.obs = [Obstacle(*ob) for ob in obs]
+            self.obs = [Obstacle(*ob, safe_dis=obstacle_safe_distance) for ob in obs]
         else:
             self.obs = []
     
