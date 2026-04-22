@@ -37,6 +37,26 @@ To visualize the simulation, use the folliwing command
 ```bash
 ./6-Gazebo/testgazebo.sh
 ```
+## Setting ROS master 
+
+```bash
+Run this on a pc on same network as turtlebot
+export ROS_IP=192.168.50.84
+export ROS_MASTER_URI=192.168.50.84:11311
+
+```
+```bash
+First ssh into turtlebot with: 
+ssh ubuntu@192.168.50.239
+# password: turtlebot
+
+then run:
+
+export ROS_MASTER_URI=http://192.168.50.84:11311
+export ROS_IP=192.168.50.239
+export TURTLEBOT3_MODEL=waffle_pi
+roslaunch turtlebot3_bringup turtlebot3_robot.launch
+```
 
 ## Some useful commands for the different tasks
 
@@ -92,4 +112,7 @@ cd ~/catkin_ws
 source devel/setup.bash
 rosrun assigment4_ttk4192 mission_planner_ttk4192.py
 ```
+
+
+
 
