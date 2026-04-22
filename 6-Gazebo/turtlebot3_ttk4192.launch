@@ -1,5 +1,5 @@
 <launch>
-  <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+  <arg name="model" default="waffle_pi" doc="model type [waffle_pi]"/>
   <arg name="x_pos" default="0.2"/>
   <arg name="y_pos" default="0.2"/>
   <arg name="z_pos" default="0.0"/>
@@ -13,7 +13,17 @@
     <arg name="debug" value="false"/>
   </include>
 
-  <param name="robot_description" command="$(find xacro)/xacro --inorder $(find turtlebot3_description)/urdf/turtlebot3_$(arg model).urdf.xacro" />
+  <!-- Robot description using the manipulation URDF (waffle_pi + OpenManipulator-X) -->
+  <param name="robot_description"
+    command="$(find xacro)/xacro
+      $(find turtlebot3_manipulation_description)/urdf/turtlebot3_manipulation_robot.urdf.xacro" />
 
-  <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf" args="-urdf -model turtlebot3_$(arg model) -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -param robot_description" />
+  <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf"
+    args="-urdf -model turtlebot3_$(arg model) -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -param robot_description" />
+
+  <!-- PID gains required by gazebo_ros_control -->
+  <rosparam file="$(find turtlebot3_manipulation_gazebo)/config/gazebo_controller.yaml" command="load"/>
+
+  <!-- Load and start the arm and gripper controllers -->
+  <include file="$(find turtlebot3_manipulation_gazebo)/launch/turtlebot3_manipulation_controller.launch"/>
 </launch>

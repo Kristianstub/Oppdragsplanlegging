@@ -167,6 +167,17 @@ class SimpleCar:
         path = []
 
         for goal, phi, m in route:
+            if m == 0:  # spin in place
+                dtheta = goal[2] - pos[2]
+                while dtheta > pi: dtheta -= 2*pi
+                while dtheta < -pi: dtheta += 2*pi
+                n_steps = max(1, round(abs(dtheta) / (pi/36)))
+                for k in range(n_steps):
+                    interp_theta = pos[2] + dtheta * k / n_steps
+                    path.append(self.get_car_state([pos[0], pos[1], interp_theta], 0))
+                pos = goal
+                continue
+
             while True:
                 car_state = self.get_car_state(pos, phi)
                 path.append(car_state)

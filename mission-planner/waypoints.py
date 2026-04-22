@@ -6,5 +6,7 @@ WAYPOINTS = [
     Position(1.71, 0.52, np.pi/2),
     Position(3.4, 1.1, -np.pi/2),
     Position(3.3, 2.6, np.pi/2),
-    Position(5.1, 0.4, -np.pi/2)
+    Position(5.1, 0.4, -np.pi/2),
+    Position(0.92, 2.5, np.pi/2),
+    Position(3.8, 1.5, np.pi/2)
 ]

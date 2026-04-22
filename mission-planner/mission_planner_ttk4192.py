@@ -123,7 +123,7 @@ class TakePhoto:
         self.image_received = False
 
         # Connect image topic
-        img_topic = "/camera/rgb/image_raw"
+        img_topic = "/camera/image"
         self.image_sub = rospy.Subscriber(img_topic, Image, self.callback)
 
         # Allow up to one second to connection
@@ -175,8 +175,48 @@ def taking_photo_exe():
 
 
 def Manipulate_OpenManipulator_x():
-    print("Executing manipulate a weight")
-    time.sleep(5)
+    print("Executing manipulate valve with OpenManipulator-X")
+
+    import actionlib
+    from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
+    from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+
+    arm_client     = actionlib.SimpleActionClient('/arm_controller/follow_joint_trajectory',     FollowJointTrajectoryAction)
+    gripper_client = actionlib.SimpleActionClient('/gripper_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
+
+    rospy.loginfo("Waiting for arm and gripper action servers...")
+    arm_client.wait_for_server(timeout=rospy.Duration(5.0))
+    gripper_client.wait_for_server(timeout=rospy.Duration(5.0))
+
+    def move_arm(positions, duration=2.0):
+        goal = FollowJointTrajectoryGoal()
+        goal.trajectory.joint_names = ['joint1', 'joint2', 'joint3', 'joint4']
+        point = JointTrajectoryPoint()
+        point.positions = positions
+        point.time_from_start = rospy.Duration(duration)
+        goal.trajectory.points = [point]
+        arm_client.send_goal_and_wait(goal)
+
+    def set_gripper(position, duration=1.0):
+        goal = FollowJointTrajectoryGoal()
+        goal.trajectory.joint_names = ['gripper']
+        point = JointTrajectoryPoint()
+        point.positions = [position]
+        point.time_from_start = rospy.Duration(duration)
+        goal.trajectory.points = [point]
+        gripper_client.send_goal_and_wait(goal)
+
+    # 1) Move arm forward to reach the valve
+    move_arm([0.0, -0.5, 0.3, 0.2], duration=2.0)
+
+    # 2) Grip
+    set_gripper(-0.01, duration=1.0)
+
+    # 3) Ungrip
+    set_gripper(0.01, duration=1.0)
+
+    # 4) Move arm back to home position
+    move_arm([0.0, -1.05, 0.35, 0.70], duration=2.0)
 
 def making_turn_exe():
     print("Executing Make a turn")
@@ -287,7 +327,7 @@ if __name__ == '__main__':
 
         turtlebot = Turtlebot()
 
-        move_turtlebot_to_position(turtlebot, WAYPOINTS[2])
+        # move_turtlebot_to_position(turtlebot, WAYPOINTS[2])
 
         # 5.3) Start mission execution 
         for step in plan_general:
@@ -295,9 +335,17 @@ if __name__ == '__main__':
                 print("Move turlebot", step['args'])
                 move_turtlebot_to_waypoint(turtlebot, step['args'])
             elif step['action'] == 'take_picture':
-                print("Take picture")
+                waypoint_name = step['args'][1] if len(step['args']) > 1 else 'unknown'
+                img_title = f"{waypoint_name}.jpg"
+                print(f"Take picture at {waypoint_name}")
+                camera = TakePhoto()
+                if camera.take_picture(img_title):
+                    rospy.loginfo("Saved image " + img_title)
+                else:
+                    rospy.loginfo("No image received at " + waypoint_name)
             elif step['action'] == 'manipulate_valve':
                 print("Manipulate valve")
+                Manipulate_OpenManipulator_x()
 
         exit(0)
 
