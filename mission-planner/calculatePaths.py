@@ -10,7 +10,7 @@ def main():
         start_pos = WAYPOINTS[i - 1]
         end_pos = WAYPOINTS[i]
         print(WAYPOINTS[i - 1], WAYPOINTS[i])
-        fig, ax = main_hybrid_a(1, start_pos, end_pos, True, False, True, show_plot=False)
+        fig, ax = main_hybrid_a(1, start_pos, end_pos, True, True, True, show_plot=False)
         fig.savefig(f"figures/WP{i - 1}-WP{i}.png")
 
 

@@ -270,7 +270,7 @@ def main_hybrid_a(heu,start_pos, end_pos,reverse, extra, grid_on, show_plot=True
         print('No valid path!')
         return
     # a post-processing is required to have path list
-    path = path[::5] + [path[-1]]
+    path = path[::2] + [path[-1]]
     branches = []
     bcolors = []
     for node in closed_:
