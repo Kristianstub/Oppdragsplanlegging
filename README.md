@@ -93,3 +93,12 @@ source devel/setup.bash
 rosrun assigment4_ttk4192 mission_planner_ttk4192.py
 ```
 
+0.000: ( move turtlebot0 waypoint0 waypoint1 d01 ) [15.4444]
+15.444: ( manipulate_valve turtlebot0 waypoint1 valve0 ) [10.0000]
+25.446: ( move turtlebot0 waypoint1 waypoint2 d12 ) [52.5000]
+77.946: ( manipulate_valve turtlebot0 waypoint2 valve1 ) [10.0000]
+87.948: ( move turtlebot0 waypoint2 waypoint5 d25 ) [26.1111]
+114.059: ( take_picture turtlebot0 waypoint5 pump0 ) [5.0000]
+119.061: ( move turtlebot0 waypoint5 waypoint6 d56 ) [32.2222]
+151.284: ( take_picture turtlebot0 waypoint6 pump1 ) [5.0000]
+156.284: ( move turtlebot0 waypoint6 waypoint4 d64 ) [23.7222]
